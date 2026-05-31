@@ -1,0 +1,41 @@
+# ============================================
+# Purplle Store Intelligence — Dependencies
+# ============================================
+
+# --- API Framework ---
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+python-multipart==0.0.20
+
+# --- Database ---
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+
+# --- Data Models & Validation ---
+pydantic==2.11.3
+pydantic-settings==2.9.1
+
+# --- Structured Logging ---
+structlog==25.4.0
+
+# --- Detection Pipeline ---
+ultralytics==8.3.145
+opencv-python-headless==4.11.0.86
+supervision==0.25.1
+lap==0.5.12
+
+# --- Re-ID ---
+# torchreid — install separately (torch dependency)
+
+# --- Geometry (Zone Classification) ---
+shapely==2.1.0
+
+# --- Testing ---
+pytest==8.4.0
+pytest-asyncio==0.26.0
+pytest-cov==6.1.1
+httpx==0.28.1
+
+# --- Utilities ---
+python-dotenv==1.1.0
+aiofiles==24.1.0

@@ -1,0 +1,122 @@
+{
+  "stores": [
+    {
+      "store_id": "ST1008",
+      "store_name": "Brigade_Bangalore",
+      "city": "Bangalore",
+      "address": "Brigade Road, Bangalore",
+      "open_hours": {
+        "open": "10:00",
+        "close": "22:00",
+        "timezone": "Asia/Kolkata"
+      },
+      "cameras": [
+        {
+          "camera_id": "CAM_FLOOR_01",
+          "file_name": "CAM 1 store inside.mp4",
+          "description": "Main floor — store interior angle 1",
+          "zones_covered": ["SKINCARE", "MAKEUP", "HAIRCARE"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM_FLOOR_02",
+          "file_name": "CAM 2 store inside 2nd angle.mp4",
+          "description": "Main floor — store interior angle 2",
+          "zones_covered": ["FRAGRANCE", "PERSONAL_CARE", "BATH_BODY"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM_ENTRY_01",
+          "file_name": "CAM3 entrance.mp4",
+          "description": "Entry/Exit threshold camera",
+          "zones_covered": ["ENTRY"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM_INTERNAL_01",
+          "file_name": "CAM 4 internal area.mp4",
+          "description": "Internal/back area of the store",
+          "zones_covered": ["INTERNAL", "STORAGE"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM_BILLING_01",
+          "file_name": "CAM 5 billing.mp4",
+          "description": "Billing counter area",
+          "zones_covered": ["BILLING"],
+          "resolution": "1080p",
+          "fps": 15
+        }
+      ],
+      "zones": [
+        {
+          "zone_id": "ENTRY",
+          "zone_name": "Entry/Exit",
+          "zone_type": "threshold",
+          "description": "Main entrance and exit point",
+          "camera_ids": ["CAM_ENTRY_01"]
+        },
+        {
+          "zone_id": "SKINCARE",
+          "zone_name": "Skincare Zone",
+          "zone_type": "product",
+          "description": "Skincare products — serums, moisturizers, sunscreen, face wash",
+          "camera_ids": ["CAM_FLOOR_01"]
+        },
+        {
+          "zone_id": "MAKEUP",
+          "zone_name": "Makeup Zone",
+          "zone_type": "product",
+          "description": "Makeup products — lipstick, foundation, kajal, mascara, blush",
+          "camera_ids": ["CAM_FLOOR_01"]
+        },
+        {
+          "zone_id": "HAIRCARE",
+          "zone_name": "Haircare Zone",
+          "zone_type": "product",
+          "description": "Hair care products — shampoo, serum, hair spray, hair mask",
+          "camera_ids": ["CAM_FLOOR_01"]
+        },
+        {
+          "zone_id": "FRAGRANCE",
+          "zone_name": "Fragrance Zone",
+          "zone_type": "product",
+          "description": "Fragrance and deodorants",
+          "camera_ids": ["CAM_FLOOR_02"]
+        },
+        {
+          "zone_id": "PERSONAL_CARE",
+          "zone_name": "Personal Care Zone",
+          "zone_type": "product",
+          "description": "Personal care — razors, foot care, body wash",
+          "camera_ids": ["CAM_FLOOR_02"]
+        },
+        {
+          "zone_id": "BATH_BODY",
+          "zone_name": "Bath & Body Zone",
+          "zone_type": "product",
+          "description": "Bath and body products — body wash, body oil, body treatment",
+          "camera_ids": ["CAM_FLOOR_02"]
+        },
+        {
+          "zone_id": "INTERNAL",
+          "zone_name": "Internal Area",
+          "zone_type": "staff",
+          "description": "Internal/staff area — not customer-facing",
+          "camera_ids": ["CAM_INTERNAL_01"]
+        },
+        {
+          "zone_id": "BILLING",
+          "zone_name": "Billing Counter",
+          "zone_type": "billing",
+          "description": "Billing/checkout counter area",
+          "camera_ids": ["CAM_BILLING_01"]
+        }
+      ]
+    }
+  ]
+}

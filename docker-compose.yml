@@ -1,0 +1,58 @@
+# ──────────────────────────────────────────────
+# Store Intelligence — Docker Compose
+# Single command: docker compose up
+# ──────────────────────────────────────────────
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: store-intel-db
+    environment:
+      POSTGRES_USER: store_intel
+      POSTGRES_PASSWORD: store_intel_pass
+      POSTGRES_DB: store_intelligence
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U store_intel -d store_intelligence"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: store-intel-api
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: store_intel
+      DB_PASSWORD: store_intel_pass
+      DB_NAME: store_intelligence
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Dashboard (Nginx serving static files)
+  dashboard:
+    image: nginx:alpine
+    container_name: store-intel-dashboard
+    ports:
+      - "3000:80"
+    volumes:
+      - ./dashboard:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
