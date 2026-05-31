@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purplle Store Intelligence</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Animated Gradient -->
+    <div class="bg-mesh">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+        <div class="mesh-blob blob-3"></div>
+    </div>
+
+    <!-- Anomaly Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <i class="fa-solid fa-store brand-icon"></i>
+                <h2>Purplle Intel</h2>
+            </div>
+            
+            <!-- Store Selector Mockup -->
+            <div class="store-selector" style="padding: 1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <label style="font-size: 0.8rem; color: rgba(255,255,255,0.7); display: block; margin-bottom: 5px;">Current Store</label>
+                <select id="store-select" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px; border-radius: 5px; outline: none;">
+                    <option value="ST1008">Brigade Road, Bangalore</option>
+                    <option value="ST1009">Indiranagar, Bangalore</option>
+                    <option value="ST1010">Phoenix Marketcity, Mumbai</option>
+                </select>
+            </div>
+
+            <nav class="menu">
+                <a href="#" id="nav-overview" class="menu-item active"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+                <a href="#" id="nav-cameras" class="menu-item"><i class="fa-solid fa-video"></i> Cameras</a>
+                <a href="#" id="nav-heatmap" class="menu-item"><i class="fa-solid fa-map-location-dot"></i> Heatmap</a>
+                <a href="#" id="nav-funnel" class="menu-item"><i class="fa-solid fa-filter"></i> Funnel</a>
+                <a href="#" id="nav-anomalies" class="menu-item"><i class="fa-solid fa-bell"></i> Anomalies</a>
+            </nav>
+            
+            <div class="store-info">
+                <p class="store-id">Store: <span class="highlight">ST1008</span></p>
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span> Live Analytics
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header glass-panel">
+                <div class="header-title">
+                    <h1>Real-Time Store Dashboard</h1>
+                    <p class="subtitle">Brigade Road, Bangalore</p>
+                </div>
+                <div class="header-actions">
+                    <div class="time-display" id="clock">00:00:00</div>
+                    <button class="btn-primary" id="refresh-btn"><i class="fa-solid fa-rotate-right"></i> Sync</button>
+                </div>
+            </header>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <!-- Metric 1 -->
+                <div class="metric-card glass-panel fade-in delay-1">
+                    <div class="metric-icon purple"><i class="fa-solid fa-users"></i></div>
+                    <div class="metric-details">
+                        <h3>In-Store Right Now</h3>
+                        <div class="metric-value" id="current-visitors">--</div>
+                    </div>
+                </div>
+
+                <!-- Metric 2 -->
+                <div class="metric-card glass-panel fade-in delay-2">
+                    <div class="metric-icon green"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <div class="metric-details">
+                        <h3>Conversion Rate</h3>
+                        <div class="metric-value" id="conversion-rate">--%</div>
+                    </div>
+                </div>
+
+                <!-- Metric 3 -->
+                <div class="metric-card glass-panel fade-in delay-3">
+                    <div class="metric-icon orange"><i class="fa-solid fa-people-arrows"></i></div>
+                    <div class="metric-details">
+                        <h3>Queue Depth</h3>
+                        <div class="metric-value" id="queue-depth">--</div>
+                    </div>
+                </div>
+
+                <!-- Metric 4 -->
+                <div class="metric-card glass-panel fade-in delay-4">
+                    <div class="metric-icon red"><i class="fa-solid fa-door-open"></i></div>
+                    <div class="metric-details">
+                        <h3>Abandonment</h3>
+                        <div class="metric-value" id="abandonment-rate">--%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Area -->
+            <div class="charts-grid">
+                <!-- Funnel Chart -->
+                <div id="section-funnel" class="chart-card glass-panel fade-in delay-5">
+                    <div class="card-header">
+                        <h2>Conversion Funnel</h2>
+                        <button class="icon-btn"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="funnelChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Heatmap Chart -->
+                <div id="section-heatmap" class="chart-card glass-panel fade-in delay-6">
+                    <div class="card-header">
+                        <h2>Zone Heatmap (Visits)</h2>
+                        <button class="icon-btn"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="heatmapChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zone Dwell Times -->
+            <div class="bottom-grid fade-in delay-7">
+                <div class="chart-card glass-panel full-width">
+                    <div class="card-header">
+                        <h2>Average Dwell Time by Zone</h2>
+                    </div>
+                    <div class="zone-bars-container" id="dwell-container">
+                        <!-- Populated by JS -->
+                        <div class="loading-state">Loading zone data...</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
