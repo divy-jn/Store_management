@@ -11,7 +11,6 @@ Tests for /stores/{store_id}/heatmap.
 from __future__ import annotations
 
 import pytest
-from httpx import AsyncClient
 
 from app import heatmap
 

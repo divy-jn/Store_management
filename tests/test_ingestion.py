@@ -11,20 +11,17 @@ Tests for the /events/ingest endpoint with TRUE partial success.
 
 from __future__ import annotations
 
-import json
 import uuid
-from datetime import datetime, timezone
 
 import pytest
 from httpx import AsyncClient
 
 from app import ingestion
-from app.models import Event
-
 
 # ---------------------------------------------------------------------------
 # Fake DB layer for unit tests (no Postgres required)
 # ---------------------------------------------------------------------------
+
 
 class FakeConnection:
     """Simulates asyncpg connection with an in-memory event store."""
@@ -76,6 +73,7 @@ def _make_event(**overrides) -> dict:
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_ingest_accepts_valid_events(async_client: AsyncClient, monkeypatch):
@@ -159,9 +157,7 @@ async def test_ingest_rejects_invalid_confidence(
 
     bad_event = _make_event(confidence=1.5)
 
-    response = await async_client.post(
-        "/events/ingest", json={"events": [bad_event]}
-    )
+    response = await async_client.post("/events/ingest", json={"events": [bad_event]})
 
     assert response.status_code == 200
     data = response.json()
@@ -178,9 +174,7 @@ async def test_ingest_rejects_invalid_event_type(
 
     bad_event = _make_event(event_type="TELEPORT")
 
-    response = await async_client.post(
-        "/events/ingest", json={"events": [bad_event]}
-    )
+    response = await async_client.post("/events/ingest", json={"events": [bad_event]})
 
     assert response.status_code == 200
     data = response.json()

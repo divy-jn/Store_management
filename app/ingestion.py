@@ -47,20 +47,35 @@ async def ingest_events(request: Request) -> IngestResponse:
     try:
         raw_body = await request.json()
     except Exception:
-        return IngestResponse(accepted=0, rejected=0, duplicates=0, errors=[
-            EventError(event_id=None, index=0, error="Invalid JSON body")
-        ])
+        return IngestResponse(
+            accepted=0,
+            rejected=0,
+            duplicates=0,
+            errors=[EventError(event_id=None, index=0, error="Invalid JSON body")],
+        )
 
     raw_events = raw_body.get("events", [])
     if not isinstance(raw_events, list):
-        return IngestResponse(accepted=0, rejected=1, duplicates=0, errors=[
-            EventError(event_id=None, index=0, error="'events' must be a list")
-        ])
+        return IngestResponse(
+            accepted=0,
+            rejected=1,
+            duplicates=0,
+            errors=[
+                EventError(event_id=None, index=0, error="'events' must be a list")
+            ],
+        )
 
     if len(raw_events) > 500:
-        return IngestResponse(accepted=0, rejected=len(raw_events), duplicates=0, errors=[
-            EventError(event_id=None, index=0, error="Batch exceeds 500 event limit")
-        ])
+        return IngestResponse(
+            accepted=0,
+            rejected=len(raw_events),
+            duplicates=0,
+            errors=[
+                EventError(
+                    event_id=None, index=0, error="Batch exceeds 500 event limit"
+                )
+            ],
+        )
 
     request.state.event_count = len(raw_events)
 
@@ -80,7 +95,11 @@ async def ingest_events(request: Request) -> IngestResponse:
                     event = Event.model_validate(raw_event)
                 except (ValidationError, Exception) as ve:
                     rejected += 1
-                    event_id = raw_event.get("event_id") if isinstance(raw_event, dict) else None
+                    event_id = (
+                        raw_event.get("event_id")
+                        if isinstance(raw_event, dict)
+                        else None
+                    )
                     errors.append(
                         EventError(
                             event_id=event_id,
@@ -88,7 +107,9 @@ async def ingest_events(request: Request) -> IngestResponse:
                             error=str(ve),
                         )
                     )
-                    logger.warning(f"Event at index {i} rejected during validation: {ve}")
+                    logger.warning(
+                        f"Event at index {i} rejected during validation: {ve}"
+                    )
                     continue
 
                 # Step 2: Insert into DB with idempotency
@@ -129,7 +150,9 @@ async def ingest_events(request: Request) -> IngestResponse:
                             error=str(e),
                         )
                     )
-                    logger.warning(f"Event {event.event_id} rejected during insert: {e}")
+                    logger.warning(
+                        f"Event {event.event_id} rejected during insert: {e}"
+                    )
 
     except RuntimeError:
         raise HTTPException(

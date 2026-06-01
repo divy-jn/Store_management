@@ -14,7 +14,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-
 # ─────────────────────────────────────────────
 # Configure structlog for JSON output
 # ─────────────────────────────────────────────
@@ -40,6 +39,7 @@ logger = structlog.get_logger()
 # ─────────────────────────────────────────────
 # Request Logging Middleware
 # ─────────────────────────────────────────────
+
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """

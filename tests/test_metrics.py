@@ -74,7 +74,9 @@ async def test_metrics_handles_empty_store(async_client: AsyncClient, monkeypatc
 
 
 @pytest.mark.asyncio
-async def test_metrics_excludes_all_staff_traffic(async_client: AsyncClient, monkeypatch):
+async def test_metrics_excludes_all_staff_traffic(
+    async_client: AsyncClient, monkeypatch
+):
     """If every detected person is staff, customer metrics should stay zero."""
     monkeypatch.setattr(
         metrics,

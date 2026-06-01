@@ -67,8 +67,6 @@ async def broadcast_update(store_id: str):
         except Exception:
             disconnected.add(ws)
 
-    _active_connections -= disconnected
-
 
 async def _get_live_metrics(store_id: str) -> dict:
     """Fetch current metrics for a store (lightweight query for live updates)."""

@@ -21,8 +21,14 @@ from app.models import Event, EventMetadata, EventType
 def test_event_type_enum_contains_all_pipeline_events():
     """All event types emitted by the pipeline must exist in the enum."""
     expected = {
-        "ENTRY", "EXIT", "ZONE_ENTER", "ZONE_EXIT", "ZONE_DWELL",
-        "BILLING_QUEUE_JOIN", "BILLING_QUEUE_ABANDON", "REENTRY",
+        "ENTRY",
+        "EXIT",
+        "ZONE_ENTER",
+        "ZONE_EXIT",
+        "ZONE_DWELL",
+        "BILLING_QUEUE_JOIN",
+        "BILLING_QUEUE_ABANDON",
+        "REENTRY",
     }
     actual = {e.value for e in EventType}
     assert expected == actual

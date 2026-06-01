@@ -1,16 +1,20 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 from shapely.geometry import Point, Polygon
 
+
 class ZoneClassifier:
     """
-    Manages spatial zones within camera views and classifies points (e.g., bottom-center 
+    Manages spatial zones within camera views and classifies points (e.g., bottom-center
     of a bounding box) into zones.
     """
+
     def __init__(self, layout_path: str = "store_layout.json"):
-        self.zones: Dict[str, Dict[str, Polygon]] = {}  # camera_id -> {zone_id: Polygon}
+        self.zones: Dict[str, Dict[str, Polygon]] = (
+            {}
+        )  # camera_id -> {zone_id: Polygon}
         self.zone_types: Dict[str, str] = {}  # zone_id -> zone_type
         self.store_id = "ST1008"
         self._load_layout(layout_path)
@@ -19,24 +23,24 @@ class ZoneClassifier:
         path = Path(layout_path)
         if not path.exists():
             return
-            
+
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            
+
         for store in data.get("stores", []):
             self.store_id = store.get("store_id")
             for zone in store.get("zones", []):
                 z_id = zone.get("zone_id")
                 z_type = zone.get("zone_type")
                 self.zone_types[z_id] = z_type
-                
+
                 # In a real scenario, polygon coordinates would be in the JSON.
-                # Since we lack them, we'll assign full-screen or logical split polygons 
+                # Since we lack them, we'll assign full-screen or logical split polygons
                 # based on the cameras covering them.
                 for cam_id in zone.get("camera_ids", []):
                     if cam_id not in self.zones:
                         self.zones[cam_id] = {}
-                    
+
                     # Create default dummy polygons covering parts of the screen
                     # For a real implementation, we'd read `polygon` from the JSON.
                     # Coordinates are arbitrary [x, y] mapped to 1920x1080 resolution.
@@ -65,10 +69,10 @@ class ZoneClassifier:
         """
         if camera_id not in self.zones:
             return None
-            
+
         pt = Point(x, y)
         for zone_id, polygon in self.zones[camera_id].items():
             if polygon.contains(pt):
                 return zone_id
-                
+
         return None

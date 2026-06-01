@@ -9,17 +9,16 @@ Tests for pipeline helper units (QueueTracker, ZoneClassifier, EventEmitter).
 """
 
 import json
-import uuid
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from pipeline.queue_tracker import QueueTracker
-from pipeline.zone_classifier import ZoneClassifier
 from pipeline.emit import EventEmitter
+from pipeline.queue_tracker import QueueTracker
 from pipeline.staff_detector import StaffDetector
+from pipeline.zone_classifier import ZoneClassifier
 
 # Use a project-local temp dir to avoid Windows permission issues
 _TEST_TMP = Path(__file__).resolve().parent.parent / ".test_tmp"

@@ -15,7 +15,11 @@ from app.database import db
 logger = logging.getLogger(__name__)
 
 # Path to POS CSV (relative to project root)
-POS_CSV_PATH = Path(__file__).parent.parent / "Project details" / "Brigade_Bangalore_10_April_26 (1)bc6219c.csv"
+POS_CSV_PATH = (
+    Path(__file__).parent.parent
+    / "Project details"
+    / "Brigade_Bangalore_10_April_26 (1)bc6219c.csv"
+)
 
 
 async def load_pos_data(csv_path: Path | None = None) -> int:
@@ -35,9 +39,7 @@ async def load_pos_data(csv_path: Path | None = None) -> int:
     try:
         async with db.acquire() as conn:
             # Check if data already loaded
-            existing = await conn.fetchval(
-                "SELECT COUNT(*) FROM pos_transactions"
-            )
+            existing = await conn.fetchval("SELECT COUNT(*) FROM pos_transactions")
             if existing > 0:
                 logger.info(f"POS data already loaded ({existing} rows)")
                 return existing
@@ -78,8 +80,16 @@ async def load_pos_data(csv_path: Path | None = None) -> int:
                             row.get("order_id", "").strip(),
                             row.get("invoice_number", "").strip(),
                             row.get("store_id", "").strip(),
-                            datetime.strptime(order_date, "%d-%m-%Y").date() if order_date else None,
-                            datetime.strptime(order_time, "%H:%M:%S").time() if order_time else None,
+                            (
+                                datetime.strptime(order_date, "%d-%m-%Y").date()
+                                if order_date
+                                else None
+                            ),
+                            (
+                                datetime.strptime(order_time, "%H:%M:%S").time()
+                                if order_time
+                                else None
+                            ),
                             timestamp,
                             row.get("customer_name", "").strip(),
                             row.get("sku", "").strip(),

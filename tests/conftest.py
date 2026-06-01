@@ -9,9 +9,7 @@ Shared test fixtures for the Store Intelligence API test suite.
 
 from __future__ import annotations
 
-import json
 import uuid
-from datetime import datetime, timezone
 
 import pytest
 import pytest_asyncio
@@ -138,23 +136,25 @@ def sample_events_batch() -> list[dict]:
 
     events = []
     for e in base_events:
-        events.append({
-            "event_id": str(uuid.uuid4()),
-            "store_id": "ST1008",
-            "camera_id": e["camera_id"],
-            "visitor_id": visitor_id,
-            "event_type": e["event_type"],
-            "timestamp": e["timestamp"],
-            "zone_id": e["zone_id"],
-            "dwell_ms": e["dwell_ms"],
-            "is_staff": False,
-            "confidence": 0.90,
-            "metadata": {
-                "queue_depth": e.get("queue_depth"),
-                "sku_zone": e.get("zone_id"),
-                "session_seq": e["session_seq"],
-            },
-        })
+        events.append(
+            {
+                "event_id": str(uuid.uuid4()),
+                "store_id": "ST1008",
+                "camera_id": e["camera_id"],
+                "visitor_id": visitor_id,
+                "event_type": e["event_type"],
+                "timestamp": e["timestamp"],
+                "zone_id": e["zone_id"],
+                "dwell_ms": e["dwell_ms"],
+                "is_staff": False,
+                "confidence": 0.90,
+                "metadata": {
+                    "queue_depth": e.get("queue_depth"),
+                    "sku_zone": e.get("zone_id"),
+                    "session_seq": e["session_seq"],
+                },
+            }
+        )
 
     return events
 

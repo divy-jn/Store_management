@@ -105,7 +105,9 @@ async def test_anomalies_endpoint_empty(async_client, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_anomalies_returns_503_when_database_unavailable(async_client, monkeypatch):
+async def test_anomalies_returns_503_when_database_unavailable(
+    async_client, monkeypatch
+):
     monkeypatch.setattr(anomalies, "db", BrokenDB())
 
     response = await async_client.get("/stores/ST1008/anomalies")

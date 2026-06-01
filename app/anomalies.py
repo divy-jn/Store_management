@@ -18,12 +18,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException
 
 from app.database import db
-from app.models import (
-    Anomaly,
-    AnomaliesResponse,
-    AnomalySeverity,
-    AnomalyType,
-)
+from app.models import AnomaliesResponse, Anomaly, AnomalySeverity, AnomalyType
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +98,8 @@ async def _check_queue_spike(conn, store_id: str, anomalies: list[Anomaly]):
 
     if avg_depth > 0 and current > (2 * avg_depth):
         severity = (
-            AnomalySeverity.CRITICAL if current > (3 * avg_depth)
+            AnomalySeverity.CRITICAL
+            if current > (3 * avg_depth)
             else AnomalySeverity.WARN
         )
         anomalies.append(

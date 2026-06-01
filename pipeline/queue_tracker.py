@@ -1,10 +1,12 @@
 from typing import Set
 
+
 class QueueTracker:
     """
     Maintains state for the billing queue.
     Keeps track of which visitors are currently in the BILLING zone.
     """
+
     def __init__(self):
         # Set of visitor IDs currently in the queue
         self.in_queue: Set[str] = set()

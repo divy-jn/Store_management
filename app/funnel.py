@@ -136,9 +136,7 @@ def _build_funnel_stages(
         else:
             prev_count = stages_data[i - 1][1]
             drop_off = (
-                ((prev_count - count) / prev_count * 100)
-                if prev_count > 0
-                else 0.0
+                ((prev_count - count) / prev_count * 100) if prev_count > 0 else 0.0
             )
 
         stages.append(

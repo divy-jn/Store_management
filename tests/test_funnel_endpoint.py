@@ -72,7 +72,9 @@ async def test_funnel_endpoint_returns_session_based_counts(
 
 
 @pytest.mark.asyncio
-async def test_funnel_endpoint_handles_empty_store(async_client: AsyncClient, monkeypatch):
+async def test_funnel_endpoint_handles_empty_store(
+    async_client: AsyncClient, monkeypatch
+):
     monkeypatch.setattr(funnel, "db", FunnelFakeDB({}))
 
     response = await async_client.get("/stores/ST1008/funnel")

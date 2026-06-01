@@ -4,7 +4,6 @@ Clears the database and slowly replays events to simulate a live store environme
 """
 
 import asyncio
-import glob
 import json
 import logging
 from pathlib import Path
@@ -26,45 +25,47 @@ async def _run_demo_replay():
     """Background task to stream events slowly for demo purposes."""
     global demo_skip_batches
     demo_skip_batches = 0
-    
+
     await asyncio.sleep(2)  # Give frontend time to reset
-    
+
     events_dir = Path("output/events")
     if not events_dir.exists():
         logger.error("Demo replay failed: output/events directory not found")
         return
-        
+
     jsonl_files = sorted(events_dir.glob("*.jsonl"))
     if not jsonl_files:
         logger.error("Demo replay failed: no JSONL files found")
         return
-        
+
     all_events = []
     for f in jsonl_files:
         with open(f, "r") as file:
             for line in file:
                 if line.strip():
                     all_events.append(json.loads(line))
-                    
+
     # Sort events by timestamp so the replay is chronological
     all_events.sort(key=lambda x: x["timestamp"])
-    
+
     if all_events:
         # Shift all timestamps to truly simulate "Live" right now
         from datetime import datetime, timezone
-        
+
         # We need to parse ISO strings safely. Since Python 3.11, fromisoformat works well.
-        first_dt = datetime.fromisoformat(all_events[0]["timestamp"].replace('Z', '+00:00'))
+        first_dt = datetime.fromisoformat(
+            all_events[0]["timestamp"].replace("Z", "+00:00")
+        )
         now_dt = datetime.now(timezone.utc)
         time_offset = now_dt - first_dt
-        
+
         for event in all_events:
-            dt = datetime.fromisoformat(event["timestamp"].replace('Z', '+00:00'))
+            dt = datetime.fromisoformat(event["timestamp"].replace("Z", "+00:00"))
             new_dt = dt + time_offset
             event["timestamp"] = new_dt.isoformat()
-            
+
     logger.info(f"Starting live demo replay of {len(all_events)} events...")
-    
+
     # Send in small batches to make the dashboard counters tick smoothly
     batch_size = 20
     async with httpx.AsyncClient() as client:
@@ -72,35 +73,36 @@ async def _run_demo_replay():
             batch = all_events[i : i + batch_size]
             try:
                 await client.post(
-                    "http://localhost:8000/events/ingest", 
-                    json={"events": batch}
+                    "http://localhost:8000/events/ingest", json={"events": batch}
                 )
             except Exception as e:
                 logger.error(f"Replay batch failed: {e}")
-            
+
             # Wait a short duration between batches to simulate real-time
             if demo_skip_batches > 0:
                 demo_skip_batches -= 1
             else:
                 await asyncio.sleep(0.3)
-            
+
     logger.info("Live demo replay events finished. Running POS simulation...")
-    
+
     # Run the POS simulation script automatically at the end to populate the funnel
     import subprocess
     import sys
+
     try:
         subprocess.run([sys.executable, "scripts/simulate_pos.py"], check=True)
         logger.info("Demo replay complete!")
-        
+
         # Broadcast completion to frontend
         from app.websocket import _active_connections
+
         for ws in list(_active_connections):
             try:
                 await ws.send_json({"type": "demo_completed"})
             except Exception:
                 pass
-                
+
     except Exception as e:
         logger.error(f"Failed to run simulate_pos.py: {e}")
 
@@ -117,10 +119,10 @@ async def start_demo_replay(background_tasks: BackgroundTasks):
             await conn.execute("TRUNCATE TABLE events, pos_transactions;")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
+
     # Start the slow streaming background task
     background_tasks.add_task(_run_demo_replay)
-    
+
     return {"status": "success", "message": "Database cleared. Live replay started."}
 
 

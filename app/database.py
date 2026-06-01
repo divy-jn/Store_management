@@ -13,7 +13,6 @@ from typing import AsyncGenerator, Optional
 import asyncpg
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,8 +20,10 @@ logger = logging.getLogger(__name__)
 # Configuration
 # ─────────────────────────────────────────────
 
+
 class DatabaseSettings(BaseSettings):
     """Database configuration from environment variables."""
+
     model_config = SettingsConfigDict(env_prefix="")
 
     db_host: str = "localhost"
@@ -32,7 +33,6 @@ class DatabaseSettings(BaseSettings):
     db_name: str = "store_intelligence"
     db_min_connections: int = 5
     db_max_connections: int = 20
-
 
 
 # ─────────────────────────────────────────────
@@ -99,6 +99,7 @@ CREATE INDEX IF NOT EXISTS idx_pos_store_timestamp ON pos_transactions (store_id
 # Connection Pool Management
 # ─────────────────────────────────────────────
 
+
 class Database:
     """Manages the PostgreSQL connection pool."""
 
@@ -110,6 +111,7 @@ class Database:
     async def connect(self) -> None:
         """Create the connection pool and initialize schema."""
         import time
+
         self._start_time = time.time()
 
         dsn = (
@@ -128,16 +130,22 @@ class Database:
                 )
                 logger.info("Database connection pool created successfully")
                 break
-            except (asyncpg.CannotConnectNowError, OSError, ConnectionRefusedError) as e:
+            except (
+                asyncpg.CannotConnectNowError,
+                OSError,
+                ConnectionRefusedError,
+            ) as e:
                 if attempt < retries - 1:
-                    wait = 2 ** attempt
+                    wait = 2**attempt
                     logger.warning(
                         f"Database connection attempt {attempt + 1}/{retries} failed, "
                         f"retrying in {wait}s: {e}"
                     )
                     await asyncio.sleep(wait)
                 else:
-                    logger.error(f"Failed to connect to database after {retries} attempts")
+                    logger.error(
+                        f"Failed to connect to database after {retries} attempts"
+                    )
                     raise
 
         # Initialize schema
@@ -155,6 +163,7 @@ class Database:
     def uptime_seconds(self) -> float:
         """Return service uptime in seconds."""
         import time
+
         if self._start_time is None:
             return 0.0
         return time.time() - self._start_time

@@ -45,8 +45,7 @@ async def health_check() -> HealthResponse:
     try:
         async with db.acquire() as conn:
             # Get per-store health info
-            store_rows = await conn.fetch(
-                """
+            store_rows = await conn.fetch("""
                 SELECT
                     store_id,
                     MAX(timestamp) as last_event_at,
@@ -54,8 +53,7 @@ async def health_check() -> HealthResponse:
                 FROM events
                 GROUP BY store_id
                 ORDER BY store_id
-                """
-            )
+                """)
 
             now = datetime.now(timezone.utc)
             stale_threshold = now - timedelta(minutes=10)

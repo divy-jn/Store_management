@@ -13,21 +13,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.staticfiles import StaticFiles
 
+from app.anomalies import router as anomalies_router
 from app.database import db
-from app.middleware import RequestLoggingMiddleware
-from app.pos_loader import load_pos_data
+from app.demo import router as demo_router
+from app.funnel import router as funnel_router
+from app.health import router as health_router
+from app.heatmap import router as heatmap_router
 
 # Import route modules
 from app.ingestion import router as ingestion_router
 from app.metrics import router as metrics_router
-from app.funnel import router as funnel_router
-from app.heatmap import router as heatmap_router
-from app.anomalies import router as anomalies_router
-from app.health import router as health_router
+from app.middleware import RequestLoggingMiddleware
+from app.pos_loader import load_pos_data
 from app.websocket import router as websocket_router
-from app.demo import router as demo_router
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +34,7 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────
 # Application Lifespan (startup / shutdown)
 # ─────────────────────────────────────────────
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -101,6 +101,7 @@ app.add_middleware(RequestLoggingMiddleware)
 # Error Handlers — Graceful Degradation
 # ─────────────────────────────────────────────
 
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """
@@ -135,6 +136,7 @@ app.include_router(demo_router)
 # ─────────────────────────────────────────────
 # Root Endpoint
 # ─────────────────────────────────────────────
+
 
 @app.get("/", tags=["Root"])
 async def root():

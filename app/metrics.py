@@ -86,9 +86,7 @@ async def get_store_metrics(
             )
             converted_visitors = converted_visitors or 0
             conversion_rate = (
-                converted_visitors / unique_visitors
-                if unique_visitors > 0
-                else 0.0
+                converted_visitors / unique_visitors if unique_visitors > 0 else 0.0
             )
 
             # --- Average dwell per zone ---
@@ -152,9 +150,7 @@ async def get_store_metrics(
             )
             queue_joins = queue_joins or 0
             queue_abandons = queue_abandons or 0
-            abandonment_rate = (
-                queue_abandons / queue_joins if queue_joins > 0 else 0.0
-            )
+            abandonment_rate = queue_abandons / queue_joins if queue_joins > 0 else 0.0
 
         return MetricsResponse(
             store_id=store_id,
