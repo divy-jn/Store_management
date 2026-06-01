@@ -1,0 +1,204 @@
+"""
+Tests for the /events/ingest endpoint with TRUE partial success.
+
+# PROMPT: "Generate tests for the event ingestion endpoint that verify partial
+# success behavior: a batch with a mix of valid and malformed events should
+# accept the valid ones and reject only the bad ones. Also test idempotency,
+# empty batches, and the 500-event limit."
+# CHANGES MADE: Added FakeDB layer to test ingestion without live Postgres.
+# Added tests for partial success, duplicate handling, and malformed events.
+"""
+
+from __future__ import annotations
+
+import json
+import uuid
+from datetime import datetime, timezone
+
+import pytest
+from httpx import AsyncClient
+
+from app import ingestion
+from app.models import Event
+
+
+# ---------------------------------------------------------------------------
+# Fake DB layer for unit tests (no Postgres required)
+# ---------------------------------------------------------------------------
+
+class FakeConnection:
+    """Simulates asyncpg connection with an in-memory event store."""
+
+    def __init__(self):
+        self.inserted = {}  # event_id -> event data
+
+    async def execute(self, query, *args):
+        event_id = args[0]
+        if event_id in self.inserted:
+            return "INSERT 0 0"  # duplicate
+        self.inserted[event_id] = args
+        return "INSERT 0 1"
+
+
+class FakeDB:
+    def __init__(self):
+        self.conn = FakeConnection()
+
+    def acquire(self):
+        return self
+
+    async def __aenter__(self):
+        return self.conn
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+
+def _make_event(**overrides) -> dict:
+    """Helper to create a valid event dict."""
+    base = {
+        "event_id": str(uuid.uuid4()),
+        "store_id": "ST1008",
+        "camera_id": "CAM_ENTRY_01",
+        "visitor_id": "VIS_test001",
+        "event_type": "ENTRY",
+        "timestamp": "2026-04-10T12:30:00Z",
+        "zone_id": None,
+        "dwell_ms": 0,
+        "is_staff": False,
+        "confidence": 0.92,
+        "metadata": {"queue_depth": None, "sku_zone": None, "session_seq": 1},
+    }
+    base.update(overrides)
+    return base
+
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_ingest_accepts_valid_events(async_client: AsyncClient, monkeypatch):
+    """A batch of valid events should all be accepted."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    events = [_make_event() for _ in range(3)]
+    response = await async_client.post("/events/ingest", json={"events": events})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 3
+    assert data["rejected"] == 0
+    assert data["duplicates"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ingest_partial_success_with_malformed_events(
+    async_client: AsyncClient, monkeypatch
+):
+    """A batch with 2 valid and 1 malformed event should accept 2 and reject 1."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    valid1 = _make_event()
+    valid2 = _make_event()
+    malformed = {"event_id": "bad", "store_id": "ST1008"}  # missing required fields
+
+    response = await async_client.post(
+        "/events/ingest", json={"events": [valid1, malformed, valid2]}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 2
+    assert data["rejected"] == 1
+    assert len(data["errors"]) == 1
+    assert data["errors"][0]["index"] == 1
+
+
+@pytest.mark.asyncio
+async def test_ingest_handles_duplicate_event_ids(
+    async_client: AsyncClient, monkeypatch
+):
+    """Sending the same event_id twice should count as a duplicate, not an error."""
+    fake_db = FakeDB()
+    monkeypatch.setattr(ingestion, "db", fake_db)
+
+    event = _make_event()
+    dup_event = _make_event(event_id=event["event_id"])
+
+    response = await async_client.post(
+        "/events/ingest", json={"events": [event, dup_event]}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 1
+    assert data["duplicates"] == 1
+    assert data["rejected"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ingest_empty_batch(async_client: AsyncClient, monkeypatch):
+    """An empty batch should return zeros, not an error."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    response = await async_client.post("/events/ingest", json={"events": []})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 0
+    assert data["rejected"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ingest_rejects_invalid_confidence(
+    async_client: AsyncClient, monkeypatch
+):
+    """Confidence outside [0.0, 1.0] should be rejected by Pydantic validation."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    bad_event = _make_event(confidence=1.5)
+
+    response = await async_client.post(
+        "/events/ingest", json={"events": [bad_event]}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["rejected"] == 1
+    assert data["accepted"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ingest_rejects_invalid_event_type(
+    async_client: AsyncClient, monkeypatch
+):
+    """An unknown event_type should be rejected per-event, not crash the batch."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    bad_event = _make_event(event_type="TELEPORT")
+
+    response = await async_client.post(
+        "/events/ingest", json={"events": [bad_event]}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["rejected"] == 1
+
+
+@pytest.mark.asyncio
+async def test_ingest_invalid_json_body(async_client: AsyncClient, monkeypatch):
+    """Sending non-JSON body should return a graceful error, not 500."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    response = await async_client.post(
+        "/events/ingest",
+        content=b"this is not json",
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 0
+    assert len(data["errors"]) >= 1

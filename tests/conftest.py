@@ -18,7 +18,6 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
-from app.models import Event, EventMetadata, EventType
 
 
 @pytest.fixture
@@ -168,14 +167,11 @@ def empty_store_events() -> list[dict]:
 
 @pytest_asyncio.fixture(scope="function")
 async def async_client():
-    """Async test client for the FastAPI app."""
-    # Using TestClient as context manager triggers lifespan events
-    # We can use AsyncClient and wrap it in the lifespan context manually
-    from httpx import ASGITransport, AsyncClient
-    from asgi_lifespan import LifespanManager
-    from app.main import app
+    """Async test client for route-level tests.
 
-    async with LifespanManager(app):
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            yield client
+    Lifespan startup opens a real PostgreSQL connection, so unit tests keep it
+    disabled and monkeypatch the database layer where needed.
+    """
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
