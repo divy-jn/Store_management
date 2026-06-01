@@ -33,7 +33,6 @@ services:
   - type: web
     name: store-intel-dashboard
     env: static
-    plan: free
     staticPublishPath: ./dashboard
 
 databases:
