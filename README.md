@@ -100,6 +100,14 @@ Features:
 - Anomaly alerts
 - WebSocket live updates
 
+### ✨ The "Live Demo" Feature (Wow Factor)
+To experience the dashboard as a store manager would in real-time, click the **▶ Live Demo** button in the top right corner of the dashboard.
+1. The database instantly clears.
+2. The backend streams the CCTV events back into the API via WebSockets, shifting all timestamps to `datetime.now()` to prevent false anomalies.
+3. A stopwatch appears tracking simulation time.
+4. Use the **⏭ Skip 10s** button to fast-forward the day.
+5. Watch the dashboard metrics, conversion funnel, and heatmaps populate live!
+
 ## 🐳 Docker
 
 ```bash
