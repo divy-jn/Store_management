@@ -113,8 +113,15 @@ function initClock() {
     }, 1000);
 }
 
-function showToast(severity, title, message) {
+function showToast(severity, title, message, durationMs = 6000) {
     const container = document.getElementById('toast-container');
+    
+    // Limit max toasts on screen to 4 to prevent overwhelming UI
+    if (container.children.length >= 4) {
+        const oldestToast = container.firstElementChild;
+        oldestToast.classList.remove('show');
+        setTimeout(() => oldestToast.remove(), 400);
+    }
     
     const toast = document.createElement('div');
     toast.className = `toast ${severity}`;
@@ -123,25 +130,29 @@ function showToast(severity, title, message) {
     if (severity === 'CRITICAL') icon = 'fa-triangle-exclamation';
     if (severity === 'WARN') icon = 'fa-circle-exclamation';
     
+    // The inline style sets the animation duration for the progress bar
     toast.innerHTML = `
         <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
         <div class="toast-content">
             <h4>${title}</h4>
             <p>${message}</p>
         </div>
-        <button class="toast-close" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="toast-close" onclick="this.parentElement.classList.remove('show'); setTimeout(() => this.parentElement.remove(), 400);"><i class="fa-solid fa-xmark"></i></button>
+        <div class="toast-progress" style="animation-duration: ${durationMs}ms;"></div>
     `;
     
     container.appendChild(toast);
     
     // Animate in
-    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => toast.classList.add('show'), 50);
     
-    // Auto remove after 6 seconds
+    // Auto remove
     setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 400);
-    }, 6000);
+        if (toast.parentElement) {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }
+    }, durationMs);
 }
 
 // --- Data Fetching ---
