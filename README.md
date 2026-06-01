@@ -9,20 +9,26 @@ Built for the **Purplle Tech Challenge 2026 — Round 2**.
 ## 🚀 Quick Start (5 Commands)
 
 ```bash
-# 1. Clone the repository
 git clone <repo-url> && cd store-intelligence
+```
 
-# 2. Start all services (API + PostgreSQL + Dashboard)
+### Method 1: Windows 1-Click Start (Recommended for Windows)
+Simply double-click the `start.bat` file in the root directory. It will automatically check your Docker installation, build the containers, handle port conflicts, and launch the dashboard in your browser!
+
+### Method 2: Standard Cross-Platform Start (Mac/Linux/Windows)
+If you prefer running commands manually or are on Mac/Linux:
+```bash
+# 1. Start all services (API + PostgreSQL + Dashboard)
 docker compose up --build -d
 
-# 3. Verify the API is running
+# 2. Verify the API is running
 curl http://localhost:8000/health
 
-# 4. Run the detection pipeline on the CCTV clips provided in the challenge dataset
+# 3. Run the detection pipeline on the CCTV clips provided in the challenge dataset
 # (Replace the --input-dir path with the actual path where you unzipped the footage)
 python pipeline/detect.py --input-dir "/path/to/cctv/footage" --output-dir ./output/events
 
-# 5. Feed events into the API
+# 4. Feed events into the API
 python pipeline/replay.py --events-dir ./output/events --api-url http://localhost:8000
 ```
 
