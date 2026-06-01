@@ -18,9 +18,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Demo"])
 
+# Global state for fast-forwarding the demo
+demo_skip_batches = 0
+
 
 async def _run_demo_replay():
     """Background task to stream events slowly for demo purposes."""
+    global demo_skip_batches
+    demo_skip_batches = 0
+    
     await asyncio.sleep(2)  # Give frontend time to reset
     
     events_dir = Path("output/events")
@@ -59,7 +65,10 @@ async def _run_demo_replay():
                 logger.error(f"Replay batch failed: {e}")
             
             # Wait a short duration between batches to simulate real-time
-            await asyncio.sleep(0.3)
+            if demo_skip_batches > 0:
+                demo_skip_batches -= 1
+            else:
+                await asyncio.sleep(0.3)
             
     logger.info("Live demo replay events finished. Running POS simulation...")
     
@@ -90,3 +99,14 @@ async def start_demo_replay(background_tasks: BackgroundTasks):
     background_tasks.add_task(_run_demo_replay)
     
     return {"status": "success", "message": "Database cleared. Live replay started."}
+
+
+@router.post("/system/demo-skip")
+async def skip_demo_time():
+    """
+    Fast-forwards the background simulation by roughly 10 seconds.
+    10 seconds / 0.3s sleep per batch = ~33 batches to skip.
+    """
+    global demo_skip_batches
+    demo_skip_batches += 33
+    return {"status": "success", "message": "Skipped 10 seconds of simulation."}

@@ -25,6 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API_URL}/system/demo-replay`, { method: 'POST' });
             if (res.ok) {
                 showToast('INFO', 'Live Demo Started', 'Database cleared. Events will stream in real-time shortly.');
+                
+                // Activate Timer and UI changes
+                demoTimerActive = true;
+                demoElapsedSeconds = 0;
+                document.getElementById('clock').style.color = 'var(--brand-purple)';
+                document.getElementById('demo-btn').style.display = 'none';
+                document.getElementById('skip-btn').style.display = 'inline-block';
+                
                 // Optimistically clear UI
                 document.getElementById('current-visitors').textContent = '0';
                 document.getElementById('conversion-rate').textContent = '0.0%';
@@ -38,6 +46,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) {
             showToast('CRITICAL', 'API Error', 'Failed to connect to API.');
+        }
+    });
+
+    document.getElementById('skip-btn').addEventListener('click', async () => {
+        try {
+            const res = await fetch(`${API_URL}/system/demo-skip`, { method: 'POST' });
+            if (res.ok) {
+                showToast('INFO', 'Fast Forward', 'Skipped 10 seconds of simulation time.');
+                demoElapsedSeconds += 10;
+            }
+        } catch (e) {
+            console.error("Skip failed", e);
         }
     });
 });
@@ -70,11 +90,23 @@ function initNavigation() {
 
 // --- UI Helpers ---
 
+let clockInterval = null;
+let demoTimerActive = false;
+let demoElapsedSeconds = 0;
+
 function initClock() {
     const clockEl = document.getElementById('clock');
-    setInterval(() => {
-        const now = new Date();
-        clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    
+    clockInterval = setInterval(() => {
+        if (demoTimerActive) {
+            demoElapsedSeconds++;
+            const mins = String(Math.floor(demoElapsedSeconds / 60)).padStart(2, '0');
+            const secs = String(demoElapsedSeconds % 60).padStart(2, '0');
+            clockEl.textContent = `${mins}:${secs}`;
+        } else {
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+        }
     }, 1000);
 }
 
