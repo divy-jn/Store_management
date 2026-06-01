@@ -423,7 +423,7 @@ body {
 /* Toast Notifications */
 .toast-container {
     position: fixed;
-    bottom: 30px;
+    top: 100px;
     right: 30px;
     display: flex;
     flex-direction: column;
