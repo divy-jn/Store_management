@@ -18,8 +18,9 @@ docker compose up --build -d
 # 3. Verify the API is running
 curl http://localhost:8000/health
 
-# 4. Run the detection pipeline on CCTV clips
-python pipeline/detect.py --input-dir "./Project details/CCTV Footage-20260529T160731Z-3-00144614ea (1)/CCTV Footage" --output-dir ./output/events
+# 4. Run the detection pipeline on the CCTV clips provided in the challenge dataset
+# (Replace the --input-dir path with the actual path where you unzipped the footage)
+python pipeline/detect.py --input-dir "/path/to/cctv/footage" --output-dir ./output/events
 
 # 5. Feed events into the API
 python pipeline/replay.py --events-dir ./output/events --api-url http://localhost:8000
@@ -49,7 +50,8 @@ python pipeline/replay.py --events-dir ./output/events --api-url http://localhos
 | `/stores/{id}/anomalies` | GET | Active anomalies |
 | `/ws/live/{id}` | WebSocket | Real-time dashboard updates |
 
-**Store ID**: `ST1008` (Brigade Road, Bangalore)
+**Multi-Tenant Architecture**:
+The API and Dashboard are strictly multi-tenant. Use the Store Selector dropdown in the UI to dynamically swap store contexts! (Note: Only `ST1008` has CCTV events provided in the dataset; other stores will correctly render zero data).
 
 ## 🔍 Detection Pipeline
 
