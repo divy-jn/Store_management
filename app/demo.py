@@ -49,6 +49,20 @@ async def _run_demo_replay():
     # Sort events by timestamp so the replay is chronological
     all_events.sort(key=lambda x: x["timestamp"])
     
+    if all_events:
+        # Shift all timestamps to truly simulate "Live" right now
+        from datetime import datetime, timezone
+        
+        # We need to parse ISO strings safely. Since Python 3.11, fromisoformat works well.
+        first_dt = datetime.fromisoformat(all_events[0]["timestamp"].replace('Z', '+00:00'))
+        now_dt = datetime.now(timezone.utc)
+        time_offset = now_dt - first_dt
+        
+        for event in all_events:
+            dt = datetime.fromisoformat(event["timestamp"].replace('Z', '+00:00'))
+            new_dt = dt + time_offset
+            event["timestamp"] = new_dt.isoformat()
+            
     logger.info(f"Starting live demo replay of {len(all_events)} events...")
     
     # Send in small batches to make the dashboard counters tick smoothly
