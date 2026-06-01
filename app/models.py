@@ -6,11 +6,16 @@ Covers event schemas, request/response models for all endpoints.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
+
+
+def utc_now() -> datetime:
+    """Return a timezone-aware UTC timestamp for API response defaults."""
+    return datetime.now(timezone.utc)
 
 
 # ─────────────────────────────────────────────
@@ -156,7 +161,7 @@ class ZoneDwell(BaseModel):
 class MetricsResponse(BaseModel):
     """Response from GET /stores/{id}/metrics."""
     store_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=utc_now)
     unique_visitors: int = Field(description="Unique non-staff visitors today")
     conversion_rate: float = Field(
         description="Visitors who purchased / total visitors (0.0 to 1.0)"
@@ -195,7 +200,7 @@ class FunnelStage(BaseModel):
 class FunnelResponse(BaseModel):
     """Response from GET /stores/{id}/funnel."""
     store_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=utc_now)
     stages: list[FunnelStage]
     total_sessions: int
 
@@ -224,7 +229,7 @@ class ZoneHeatmapEntry(BaseModel):
 class HeatmapResponse(BaseModel):
     """Response from GET /stores/{id}/heatmap."""
     store_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=utc_now)
     zones: list[ZoneHeatmapEntry]
     total_sessions: int
 
@@ -240,14 +245,14 @@ class Anomaly(BaseModel):
     severity: AnomalySeverity
     description: str
     suggested_action: str
-    detected_at: datetime = Field(default_factory=datetime.utcnow)
+    detected_at: datetime = Field(default_factory=utc_now)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class AnomaliesResponse(BaseModel):
     """Response from GET /stores/{id}/anomalies."""
     store_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=utc_now)
     anomalies: list[Anomaly]
     active_count: int
 

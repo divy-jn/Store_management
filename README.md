@@ -56,11 +56,12 @@ python pipeline/replay.py --events-dir ./output/events --api-url http://localhos
 The pipeline processes CCTV footage to generate structured behavioral events:
 
 ```bash
-# Process all clips
-./pipeline/run.sh
-
-# Or on Windows
+# Process all clips on Windows
 ./pipeline/run.ps1
+
+# Or run cross-platform commands directly
+python pipeline/detect.py --input-dir "<cctv-footage-dir>" --output-dir ./output/events
+python pipeline/replay.py --events-dir ./output/events --api-url http://localhost:8000
 ```
 
 **Models Used:**

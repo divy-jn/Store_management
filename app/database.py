@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Optional
 
 import asyncpg
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 
 class DatabaseSettings(BaseSettings):
     """Database configuration from environment variables."""
+    model_config = SettingsConfigDict(env_prefix="")
+
     db_host: str = "localhost"
     db_port: int = 5432
     db_user: str = "store_intel"
@@ -31,8 +33,6 @@ class DatabaseSettings(BaseSettings):
     db_min_connections: int = 5
     db_max_connections: int = 20
 
-    class Config:
-        env_prefix = ""
 
 
 # ─────────────────────────────────────────────

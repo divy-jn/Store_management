@@ -19,6 +19,7 @@ import pytest
 from pipeline.queue_tracker import QueueTracker
 from pipeline.zone_classifier import ZoneClassifier
 from pipeline.emit import EventEmitter
+from pipeline.staff_detector import StaffDetector
 
 # Use a project-local temp dir to avoid Windows permission issues
 _TEST_TMP = Path(__file__).resolve().parent.parent / ".test_tmp"
@@ -148,11 +149,30 @@ def test_event_emitter_increments_session_seq(local_tmp):
     assert seqs == [1, 2, 3]
 
 
-def test_event_emitter_calculate_timestamp():
+def test_event_emitter_calculate_timestamp(local_tmp):
     """Timestamp calculation should offset from clip start based on frame/fps."""
-    emitter = EventEmitter("ST1008", ".")
+    emitter = EventEmitter("ST1008", str(local_tmp))
     start = datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
 
     ts = emitter.calculate_timestamp(start, frame_number=30, fps=15.0)
     delta = (ts - start).total_seconds()
     assert abs(delta - 2.0) < 0.01  # 30 frames / 15 fps = 2 seconds
+
+
+def test_staff_detector_identifies_dark_uniform():
+    """A mostly dark upper-body crop should be classified as staff-like."""
+    np = pytest.importorskip("numpy")
+
+    frame = np.full((100, 60, 3), 255, dtype=np.uint8)
+    frame[:50, :, :] = 0
+
+    assert StaffDetector().is_staff(frame, (0, 0, 60, 100)) is True
+
+
+def test_staff_detector_rejects_invalid_bbox():
+    """Invalid or empty bounding boxes should be treated as non-staff."""
+    np = pytest.importorskip("numpy")
+
+    frame = np.full((100, 60, 3), 255, dtype=np.uint8)
+
+    assert StaffDetector().is_staff(frame, (10, 10, 10, 50)) is False
