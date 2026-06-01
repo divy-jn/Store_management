@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 showToast('INFO', 'Fast Forward', 'Skipped 10 seconds of simulation time.');
                 demoElapsedSeconds += 10;
+                
+                // Automatically fetch charts so they update during the skip without needing manual Sync
+                fetchInitialData();
             }
         } catch (e) {
             console.error("Skip failed", e);
