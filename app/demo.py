@@ -78,6 +78,15 @@ async def _run_demo_replay():
     try:
         subprocess.run([sys.executable, "scripts/simulate_pos.py"], check=True)
         logger.info("Demo replay complete!")
+        
+        # Broadcast completion to frontend
+        from app.websocket import _active_connections
+        for ws in list(_active_connections):
+            try:
+                await ws.send_json({"type": "demo_completed"})
+            except Exception:
+                pass
+                
     except Exception as e:
         logger.error(f"Failed to run simulate_pos.py: {e}")
 

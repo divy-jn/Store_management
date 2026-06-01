@@ -218,6 +218,14 @@ function connectWebSocket() {
             const el = document.getElementById('current-visitors');
             el.style.color = 'var(--brand-primary)';
             setTimeout(() => el.style.color = '', 500);
+        } else if (msg.type === 'demo_completed') {
+            demoTimerActive = false;
+            document.getElementById('skip-btn').style.display = 'none';
+            const demoBtn = document.getElementById('demo-btn');
+            demoBtn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restart Demo';
+            demoBtn.style.display = 'inline-block';
+            fetchInitialData();
+            showToast('INFO', 'Demo Complete', 'Checkout simulation complete! Funnel is updated.');
         }
     };
     
