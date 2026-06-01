@@ -33,8 +33,9 @@ services:
   - type: web
     name: store-intel-dashboard
     env: static
-    buildCommand: 'echo "No build required for vanilla JS"'
-    staticPublishPath: ./dashboard
+    rootDir: ./dashboard
+    buildCommand: 'echo "No build required"'
+    staticPublishPath: ./
 
 databases:
   # 3. The PostgreSQL Database
