@@ -30,7 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 demoTimerActive = true;
                 demoElapsedSeconds = 0;
                 document.getElementById('clock').style.color = 'var(--brand-purple)';
-                document.getElementById('demo-btn').style.display = 'none';
+                
+                const demoBtn = document.getElementById('demo-btn');
+                demoBtn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Restart';
                 document.getElementById('skip-btn').style.display = 'inline-block';
                 
                 // Optimistically clear UI
