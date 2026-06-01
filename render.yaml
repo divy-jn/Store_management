@@ -34,7 +34,6 @@ services:
     name: store-intel-dashboard
     env: static
     plan: free
-    region: oregon
     staticPublishPath: ./dashboard
 
 databases:
