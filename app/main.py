@@ -27,6 +27,7 @@ from app.heatmap import router as heatmap_router
 from app.anomalies import router as anomalies_router
 from app.health import router as health_router
 from app.websocket import router as websocket_router
+from app.demo import router as demo_router
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,7 @@ app.include_router(heatmap_router)
 app.include_router(anomalies_router)
 app.include_router(health_router)
 app.include_router(websocket_router)
+app.include_router(demo_router)
 
 
 # ─────────────────────────────────────────────

@@ -17,6 +17,29 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchInitialData();
         showToast('INFO', 'Data Sync', 'Dashboard data has been refreshed manually.');
     });
+
+    document.getElementById('demo-btn').addEventListener('click', async () => {
+        if (!confirm('This will clear the current data and restart the live demo replay. Continue?')) return;
+        
+        try {
+            const res = await fetch(`${API_URL}/system/demo-replay`, { method: 'POST' });
+            if (res.ok) {
+                showToast('INFO', 'Live Demo Started', 'Database cleared. Events will stream in real-time shortly.');
+                // Optimistically clear UI
+                document.getElementById('current-visitors').textContent = '0';
+                document.getElementById('conversion-rate').textContent = '0.0%';
+                document.getElementById('queue-depth').textContent = '0';
+                document.getElementById('abandonment-rate').textContent = '0.0%';
+                updateFunnelChart([]);
+                updateHeatmapChart([]);
+                document.getElementById('dwell-container').innerHTML = '<div class="loading-state">Waiting for dwell data...</div>';
+            } else {
+                showToast('CRITICAL', 'Demo Error', 'Failed to start demo replay.');
+            }
+        } catch (e) {
+            showToast('CRITICAL', 'API Error', 'Failed to connect to API.');
+        }
+    });
 });
 
 // --- Navigation ---
