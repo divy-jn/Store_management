@@ -81,3 +81,8 @@ CREATE TABLE IF NOT EXISTS store_events (
 4. **10:15 AM**: Customer queues at Billing. Pipeline emits `BILLING_QUEUE_JOIN`.
 5. **10:20 AM**: Customer leaves store (CAM 3). Pipeline emits `EXIT`.
 6. API calculates conversion: Funnel updates `[Walk-ins: +1, Zone Visits: +1, Billing: +1]`.
+
+## 4. AI-Assisted Decisions
+1. **Event Schema Typing Strategy**: AI suggested using strict Pydantic schemas for everything to prevent injection attacks and ensure data consistency. I agreed, heavily utilizing Pydantic in `app/models.py`, which caught multiple edge cases during the pipeline implementation.
+2. **WebSocket Integration**: AI suggested using Server-Sent Events (SSE) for the live dashboard to save overhead. I **overrode** this and chose WebSockets because WebSockets provide a true bidirectional channel, which allowed me to seamlessly implement the "Demo Complete" signaling and "Restart Demo" UI features later on without polling.
+3. **Zone Classification Logic**: AI suggested using a Vision-Language Model (VLM) like GPT-4V to classify zones dynamically from frames. I **overrode** this decision because VLMs are too slow for 15fps edge processing. Instead, I implemented a robust `shapely` geometric intersection check between bounding box feet and predefined zone polygons.
