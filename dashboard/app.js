@@ -1,5 +1,6 @@
 const API_URL = 'http://localhost:8000';
-const STORE_ID = 'ST1008';
+let STORE_ID = document.getElementById('store-selector') ? document.getElementById('store-selector').value : 'ST1008';
+let activeWebSocket = null;
 
 // Chart instances
 let funnelChart = null;
@@ -13,6 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
     initNavigation();
     
+    // Store Selector logic
+    const storeSelector = document.getElementById('store-selector');
+    if (storeSelector) {
+        storeSelector.addEventListener('change', (e) => {
+            STORE_ID = e.target.value;
+            showToast('INFO', 'Store Changed', `Now viewing live analytics for ${e.target.options[e.target.selectedIndex].text}`);
+            
+            // Clear UI optimistically
+            document.getElementById('current-visitors').textContent = '0';
+            document.getElementById('conversion-rate').textContent = '0.0%';
+            document.getElementById('queue-depth').textContent = '0';
+            document.getElementById('abandonment-rate').textContent = '0.0%';
+            updateFunnelChart([]);
+            updateHeatmapChart([]);
+            document.getElementById('dwell-container').innerHTML = '<div class="loading-state">Fetching store data...</div>';
+            
+            // Refetch and reconnect
+            fetchInitialData();
+            if (activeWebSocket) {
+                // Prevent auto-reconnect logic from the old socket
+                activeWebSocket.onclose = null;
+                activeWebSocket.close();
+            }
+            connectWebSocket();
+        });
+    }
+
     document.getElementById('refresh-btn').addEventListener('click', () => {
         fetchInitialData();
         showToast('INFO', 'Data Sync', 'Dashboard data has been refreshed manually.');
@@ -221,6 +249,7 @@ function connectWebSocket() {
     // Determine WS URL based on current host (handling local vs docker)
     const wsUrl = `ws://localhost:8000/ws/live/${STORE_ID}`;
     const ws = new WebSocket(wsUrl);
+    activeWebSocket = ws;
     
     ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
