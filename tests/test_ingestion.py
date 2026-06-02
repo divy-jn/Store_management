@@ -196,3 +196,86 @@ async def test_ingest_invalid_json_body(async_client: AsyncClient, monkeypatch):
     data = response.json()
     assert data["accepted"] == 0
     assert len(data["errors"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_ingest_accepts_new_sample_entry_schema(
+    async_client: AsyncClient, monkeypatch
+):
+    """New challenge sample entry events should normalize into canonical ENTRY."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    sample_entry = {
+        "event_type": "entry",
+        "id_token": "ID_60001",
+        "store_code": "store_1076",
+        "camera_id": "cam1",
+        "event_timestamp": "2026-03-08T18:10:05.120000",
+        "is_staff": False,
+    }
+
+    response = await async_client.post(
+        "/events/ingest", json={"events": [sample_entry]}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 1
+    assert data["rejected"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ingest_accepts_new_sample_zone_schema(
+    async_client: AsyncClient, monkeypatch
+):
+    """New challenge zone_entered events should normalize into ZONE_ENTER."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    sample_zone = {
+        "event_type": "zone_entered",
+        "track_id": 101,
+        "store_id": "ST1076",
+        "camera_id": "CAM2",
+        "zone_id": "PURPLLE_MUM_1076_Z01",
+        "zone_name": "Left Shelf",
+        "event_time": "2026-03-08T18:10:45.280000",
+    }
+
+    response = await async_client.post("/events/ingest", json={"events": [sample_zone]})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 1
+    assert data["rejected"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ingest_accepts_new_sample_queue_schema(
+    async_client: AsyncClient, monkeypatch
+):
+    """New challenge queue_abandoned events should normalize into abandon events."""
+    monkeypatch.setattr(ingestion, "db", FakeDB())
+
+    sample_queue = {
+        "queue_event_id": str(uuid.uuid4()),
+        "event_type": "queue_abandoned",
+        "track_id": 101,
+        "store_id": "ST1076",
+        "camera_id": "PURPLLE_MUM_1076_CAM6",
+        "zone_id": "PURPLLE_MUM_1076_Z_BILLING_01",
+        "zone_name": "Billing Counter Queue",
+        "queue_join_ts": "2026-03-08T18:12:58.240000",
+        "queue_exit_ts": "2026-03-08T18:14:02.880000",
+        "wait_seconds": 65,
+        "queue_position_at_join": 4,
+        "abandoned": True,
+    }
+
+    response = await async_client.post(
+        "/events/ingest", json={"events": [sample_queue]}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted"] == 1
+    assert data["rejected"] == 0

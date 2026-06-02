@@ -14,12 +14,22 @@ from app.database import db
 
 logger = logging.getLogger(__name__)
 
-# Path to POS CSV (relative to project root)
-POS_CSV_PATH = (
-    Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent
+POS_CSV_CANDIDATES = [
+    PROJECT_ROOT
     / "Project details"
-    / "Brigade_Bangalore_10_April_26 (1)bc6219c.csv"
-)
+    / "New folder"
+    / "POS - sample transactionsb1e826f.csv",
+    PROJECT_ROOT / "Project details" / "Brigade_Bangalore_10_April_26 (1)bc6219c.csv",
+]
+
+
+def _default_pos_csv_path() -> Path:
+    """Prefer the latest challenge POS file, falling back to the older dataset."""
+    for candidate in POS_CSV_CANDIDATES:
+        if candidate.exists():
+            return candidate
+    return POS_CSV_CANDIDATES[0]
 
 
 async def load_pos_data(csv_path: Path | None = None) -> int:
@@ -28,7 +38,7 @@ async def load_pos_data(csv_path: Path | None = None) -> int:
 
     Returns the number of rows inserted.
     """
-    path = csv_path or POS_CSV_PATH
+    path = csv_path or _default_pos_csv_path()
 
     if not path.exists():
         logger.warning(f"POS CSV not found at {path}")
@@ -92,7 +102,7 @@ async def load_pos_data(csv_path: Path | None = None) -> int:
                             ),
                             timestamp,
                             row.get("customer_name", "").strip(),
-                            row.get("sku", "").strip(),
+                            (row.get("sku") or row.get("product_id") or "").strip(),
                             row.get("product_name", "").strip(),
                             row.get("brand_name", "").strip(),
                             row.get("dep_name", "").strip(),

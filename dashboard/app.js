@@ -1,5 +1,5 @@
 const API_URL = 'http://localhost:8000';
-let STORE_ID = document.getElementById('store-selector') ? document.getElementById('store-selector').value : 'ST1008';
+let STORE_ID = 'ST1008';
 let activeWebSocket = null;
 
 // Chart instances
@@ -8,6 +8,11 @@ let heatmapChart = null;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
+    const storeSelector = document.getElementById('store-select');
+    if (storeSelector) {
+        STORE_ID = storeSelector.value;
+    }
+
     initClock();
     initCharts();
     fetchInitialData();
@@ -15,10 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     
     // Store Selector logic
-    const storeSelector = document.getElementById('store-selector');
     if (storeSelector) {
         storeSelector.addEventListener('change', (e) => {
             STORE_ID = e.target.value;
+            const storeIdLabel = document.querySelector('.store-id .highlight');
+            if (storeIdLabel) {
+                storeIdLabel.textContent = STORE_ID;
+            }
             showToast('INFO', 'Store Changed', `Now viewing live analytics for ${e.target.options[e.target.selectedIndex].text}`);
             
             // Clear UI optimistically

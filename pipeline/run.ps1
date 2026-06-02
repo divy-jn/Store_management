@@ -1,12 +1,23 @@
 # Store Intelligence Pipeline Runner
 
+param(
+    [string]$InputDir,
+    [string]$OutputDir,
+    [string]$StoreId = "ST1008",
+    [string]$ApiUrl = "http://localhost:8000"
+)
+
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Resolve-Path (Join-Path $ScriptDir "..")
 
 # Input paths
-$InputDir = Join-Path $ProjectRoot "Project details\CCTV Footage-20260529T160731Z-3-00144614ea (1)\CCTV Footage"
-$OutputDir = Join-Path $ProjectRoot "output\events"
+if (-not $InputDir) {
+    $InputDir = Join-Path $ProjectRoot "Project details\New folder\Store 1"
+}
+if (-not $OutputDir) {
+    $OutputDir = Join-Path $ProjectRoot "output\events"
+}
 
 Write-Host "🚀 Starting Store Intelligence Detection Pipeline" -ForegroundColor Cyan
 Write-Host "Checking for CCTV videos in $InputDir..."
@@ -18,7 +29,7 @@ if (-not (Test-Path $InputDir)) {
 
 # Run Detection
 Write-Host "👁️ Running YOLOv8 + ByteTrack detection..." -ForegroundColor Yellow
-python (Join-Path $ScriptDir "detect.py") --input-dir $InputDir --output-dir $OutputDir
+python (Join-Path $ScriptDir "detect.py") --input-dir $InputDir --output-dir $OutputDir --store-id $StoreId
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Detection failed" -ForegroundColor Red
@@ -29,7 +40,7 @@ Write-Host "✅ Detection complete!" -ForegroundColor Green
 
 # Replay to API
 Write-Host "🌐 Sending events to API..." -ForegroundColor Yellow
-python (Join-Path $ScriptDir "replay.py") --events-dir $OutputDir --api-url http://localhost:8000
+python (Join-Path $ScriptDir "replay.py") --events-dir $OutputDir --api-url $ApiUrl
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Ingestion failed" -ForegroundColor Red

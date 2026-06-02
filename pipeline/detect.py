@@ -323,9 +323,14 @@ def main():
     parser.add_argument(
         "--output-dir", required=True, help="Directory to write JSONL events"
     )
+    parser.add_argument(
+        "--store-id",
+        default="ST1008",
+        help="Store identifier to write into emitted events (default: ST1008)",
+    )
     args = parser.parse_args()
 
-    pipeline = DetectionPipeline(store_id="ST1008", output_dir=args.output_dir)
+    pipeline = DetectionPipeline(store_id=args.store_id, output_dir=args.output_dir)
 
     input_path = Path(args.input_dir)
     if not input_path.exists():
@@ -341,6 +346,14 @@ def main():
         "CAM3 entrance.mp4": "CAM_ENTRY_01",
         "CAM 4 internal area.mp4": "CAM_INTERNAL_01",
         "CAM 5 billing.mp4": "CAM_BILLING_01",
+        "CAM 1 - zone.mp4": "CAM_FLOOR_01",
+        "CAM 2 - zone.mp4": "CAM_FLOOR_02",
+        "CAM 3 - entry.mp4": "CAM_ENTRY_01",
+        "CAM 5 - billing.mp4": "CAM_BILLING_01",
+        "zone.mp4": "CAM_FLOOR_01",
+        "entry 1.mp4": "CAM_ENTRY_01",
+        "entry 2.mp4": "CAM_ENTRY_02",
+        "billing_area.mp4": "CAM_BILLING_01",
     }
 
     video_paths = {}

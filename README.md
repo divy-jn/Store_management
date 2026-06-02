@@ -24,9 +24,8 @@ docker compose up --build -d
 # 2. Verify the API is running
 curl http://localhost:8000/health
 
-# 3. Run the detection pipeline on the CCTV clips provided in the challenge dataset
-# (Replace the --input-dir path with the actual path where you unzipped the footage)
-python pipeline/detect.py --input-dir "/path/to/cctv/footage" --output-dir ./output/events
+# 3. Run the detection pipeline on the new Store 1 CCTV folder
+python pipeline/detect.py --input-dir "./Project details/New folder/Store 1" --output-dir ./output/events --store-id ST1008
 
 # 4. Feed events into the API
 python pipeline/replay.py --events-dir ./output/events --api-url http://localhost:8000
@@ -64,13 +63,20 @@ The API and Dashboard are strictly multi-tenant. Use the Store Selector dropdown
 The pipeline processes CCTV footage to generate structured behavioral events:
 
 ```bash
-# Process all clips on Windows
+# Process the new Store 1 clips on Windows
 ./pipeline/run.ps1
 
+# Process Store 2 instead
+./pipeline/run.ps1 -InputDir "./Project details/New folder/Store 2" -StoreId ST1009
+
 # Or run cross-platform commands directly
-python pipeline/detect.py --input-dir "<cctv-footage-dir>" --output-dir ./output/events
+python pipeline/detect.py --input-dir "<store-footage-dir>" --output-dir ./output/events --store-id ST1008
 python pipeline/replay.py --events-dir ./output/events --api-url http://localhost:8000
 ```
+
+The API also accepts the provided `sample_eventsbe42122.jsonl` event variants
+(`entry`, `zone_entered`, `queue_abandoned`, etc.) by normalizing them into the
+canonical event schema during ingestion.
 
 **Models Used:**
 - **YOLOv8s** — Person detection
