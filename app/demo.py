@@ -29,8 +29,18 @@ async def _run_demo_replay():
     await asyncio.sleep(2)  # Give frontend time to reset
 
     events_dir = Path("output/events")
+    fallback_dirs = [
+        Path("Project details/New folder"),
+        Path("output"),
+    ]
+    if not events_dir.exists() or not list(events_dir.glob("*.jsonl")):
+        for fallback in fallback_dirs:
+            if fallback.exists() and list(fallback.glob("*.jsonl")):
+                events_dir = fallback
+                break
+
     if not events_dir.exists():
-        logger.error("Demo replay failed: output/events directory not found")
+        logger.error("Demo replay failed: no events directory found")
         return
 
     jsonl_files = sorted(events_dir.glob("*.jsonl"))

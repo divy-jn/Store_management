@@ -1,5 +1,5 @@
 const API_URL = 'http://localhost:8000';
-let STORE_ID = 'ST1008';
+let STORE_ID = 'ST1076';
 let activeWebSocket = null;
 
 // Chart instances
