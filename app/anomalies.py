@@ -137,6 +137,7 @@ async def _check_conversion_drop(conn, store_id: str, anomalies: list[Anomaly]):
     if today_visitors == 0:
         return  # No data yet, skip
 
+    checkout_minutes = db.settings.checkout_attribution_minutes
     today_converted = await conn.fetchval(
         """
         SELECT COUNT(DISTINCT e.visitor_id)
@@ -146,9 +147,10 @@ async def _check_conversion_drop(conn, store_id: str, anomalies: list[Anomaly]):
           AND e.is_staff = FALSE
           AND (e.zone_id = 'BILLING' OR e.zone_id LIKE '%BILLING%' OR e.event_type = 'BILLING_QUEUE_JOIN')
           AND e.event_type IN ('ZONE_ENTER', 'ZONE_DWELL', 'BILLING_QUEUE_JOIN')
-          AND e.timestamp BETWEEN (p.timestamp - INTERVAL '{db.settings.checkout_attribution_minutes} minutes') AND p.timestamp
+          AND e.timestamp BETWEEN (p.timestamp - ($2 || ' minutes')::INTERVAL) AND p.timestamp
         """,
         store_id,
+        str(checkout_minutes),
     )
     today_converted = today_converted or 0
     today_rate = today_converted / today_visitors if today_visitors > 0 else 0
