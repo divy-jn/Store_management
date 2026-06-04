@@ -117,6 +117,95 @@
           "camera_ids": ["CAM_BILLING_01"]
         }
       ]
+    },
+    {
+      "store_id": "ST1076",
+      "store_name": "Purplle Mumbai",
+      "city": "Mumbai",
+      "address": "Phoenix Marketcity, Mumbai",
+      "open_hours": {
+        "open": "10:00",
+        "close": "22:00",
+        "timezone": "Asia/Kolkata"
+      },
+      "cameras": [
+        {
+          "camera_id": "CAM1",
+          "file_name": "cam1.mp4",
+          "description": "Entry camera",
+          "zones_covered": ["ENTRY"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM2",
+          "file_name": "cam2.mp4",
+          "description": "Left Shelf",
+          "zones_covered": ["PURPLLE_MUM_1076_Z01"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM3",
+          "file_name": "cam3.mp4",
+          "description": "Center Display",
+          "zones_covered": ["PURPLLE_MUM_1076_Z02"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "CAM4",
+          "file_name": "cam4.mp4",
+          "description": "Lipstick Aisle",
+          "zones_covered": ["PURPLLE_MUM_1076_Z03"],
+          "resolution": "1080p",
+          "fps": 15
+        },
+        {
+          "camera_id": "PURPLLE_MUM_1076_CAM6",
+          "file_name": "cam6.mp4",
+          "description": "Billing Counter",
+          "zones_covered": ["PURPLLE_MUM_1076_Z_BILLING_01"],
+          "resolution": "1080p",
+          "fps": 15
+        }
+      ],
+      "zones": [
+        {
+          "zone_id": "ENTRY",
+          "zone_name": "Entry/Exit",
+          "zone_type": "threshold",
+          "description": "Main entrance",
+          "camera_ids": ["CAM1"]
+        },
+        {
+          "zone_id": "PURPLLE_MUM_1076_Z01",
+          "zone_name": "Left Shelf",
+          "zone_type": "SHELF",
+          "description": "Left Shelf",
+          "camera_ids": ["CAM2"]
+        },
+        {
+          "zone_id": "PURPLLE_MUM_1076_Z02",
+          "zone_name": "Center Display",
+          "zone_type": "DISPLAY",
+          "description": "Center Display",
+          "camera_ids": ["CAM3"]
+        },
+        {
+          "zone_id": "PURPLLE_MUM_1076_Z03",
+          "zone_name": "Lipstick Aisle",
+          "zone_type": "SHELF",
+          "description": "Lipstick Aisle",
+          "camera_ids": ["CAM4"]
+        },
+        {
+          "zone_id": "PURPLLE_MUM_1076_Z_BILLING_01",
+          "zone_name": "Billing Counter Queue",
+          "zone_type": "BILLING",
+          "description": "Billing Counter Queue",
+          "camera_ids": ["PURPLLE_MUM_1076_CAM6"]
+        }
+      ]
     }
-  ]
 }

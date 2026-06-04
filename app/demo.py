@@ -62,17 +62,35 @@ async def _run_demo_replay():
         # Shift all timestamps to truly simulate "Live" right now
         from datetime import datetime, timezone
 
-        # We need to parse ISO strings safely. Since Python 3.11, fromisoformat works well.
-        first_dt = datetime.fromisoformat(
-            all_events[0]["timestamp"].replace("Z", "+00:00")
-        )
-        now_dt = datetime.now(timezone.utc)
-        time_offset = now_dt - first_dt
+        def get_ts(ev):
+            return ev.get("timestamp") or ev.get("event_timestamp") or ev.get("event_time") or ev.get("queue_join_ts") or ev.get("queue_exit_ts")
 
-        for event in all_events:
-            dt = datetime.fromisoformat(event["timestamp"].replace("Z", "+00:00"))
-            new_dt = dt + time_offset
-            event["timestamp"] = new_dt.isoformat()
+        def set_ts(ev, val):
+            if "timestamp" in ev: ev["timestamp"] = val
+            if "event_timestamp" in ev: ev["event_timestamp"] = val
+            if "event_time" in ev: ev["event_time"] = val
+            if "queue_join_ts" in ev: ev["queue_join_ts"] = val
+            if "queue_served_ts" in ev: ev["queue_served_ts"] = val
+            if "queue_exit_ts" in ev: ev["queue_exit_ts"] = val
+
+        def parse_dt(ts_str):
+            dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+
+        first_ts_str = get_ts(all_events[0])
+        if first_ts_str:
+            first_dt = parse_dt(first_ts_str)
+            now_dt = datetime.now(timezone.utc)
+            time_offset = now_dt - first_dt
+
+            for event in all_events:
+                ts_str = get_ts(event)
+                if ts_str:
+                    dt = parse_dt(ts_str)
+                    new_dt = dt + time_offset
+                    set_ts(event, new_dt.isoformat())
 
     logger.info(f"Starting live demo replay of {len(all_events)} events...")
 

@@ -40,10 +40,10 @@ async def main():
     # Get recent unique visitors who entered the billing queue, and their earliest join time
     queue_events = await conn.fetch(
         """
-        SELECT visitor_id, MIN(timestamp) as join_time 
+        SELECT visitor_id, store_id, MIN(timestamp) as join_time 
         FROM events 
         WHERE event_type = 'BILLING_QUEUE_JOIN'
-        GROUP BY visitor_id
+        GROUP BY visitor_id, store_id
         """
     )
 
@@ -64,6 +64,7 @@ async def main():
 
     for event in queue_events:
         visitor_id = event["visitor_id"]
+        store_id = event["store_id"]
         join_time = event["join_time"]
 
         # Only 70% of people in the queue actually complete a purchase (30% drop-off)
@@ -97,7 +98,7 @@ async def main():
                 """,
                 order_id,
                 invoice,
-                "ST1008",
+                store_id,
                 checkout_time.date(),
                 checkout_time.time(),
                 checkout_time,

@@ -78,7 +78,7 @@ async def get_store_metrics(
                 JOIN pos_transactions p ON e.store_id = p.store_id
                 WHERE e.store_id = $1
                   AND e.is_staff = FALSE
-                  AND e.zone_id = 'BILLING'
+                  AND (e.zone_id = 'BILLING' OR e.zone_id LIKE '%BILLING%' OR e.event_type = 'BILLING_QUEUE_JOIN')
                   AND e.event_type IN ('ZONE_ENTER', 'ZONE_DWELL', 'BILLING_QUEUE_JOIN')
                   AND e.timestamp BETWEEN (p.timestamp - INTERVAL '5 minutes') AND p.timestamp
                 """,
