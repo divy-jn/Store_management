@@ -71,6 +71,7 @@ async def get_store_metrics(
             # --- Conversion rate ---
             # A visitor is "converted" if they were in the billing zone
             # within a 5-minute window before a POS transaction
+            checkout_minutes = db.settings.checkout_attribution_minutes
             converted_visitors = await conn.fetchval(
                 """
                 SELECT COUNT(DISTINCT e.visitor_id)
@@ -80,9 +81,10 @@ async def get_store_metrics(
                   AND e.is_staff = FALSE
                   AND (e.zone_id = 'BILLING' OR e.zone_id LIKE '%BILLING%' OR e.event_type = 'BILLING_QUEUE_JOIN')
                   AND e.event_type IN ('ZONE_ENTER', 'ZONE_DWELL', 'BILLING_QUEUE_JOIN')
-                  AND e.timestamp BETWEEN (p.timestamp - INTERVAL '{db.settings.checkout_attribution_minutes} minutes') AND p.timestamp
+                  AND e.timestamp BETWEEN (p.timestamp - ($2 || ' minutes')::INTERVAL) AND p.timestamp
                 """,
                 store_id,
+                str(checkout_minutes),
             )
             converted_visitors = converted_visitors or 0
             conversion_rate = (

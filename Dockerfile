@@ -38,9 +38,11 @@ RUN useradd --create-home --shell /bin/bash appuser
 # Copy application code
 COPY app/ ./app/
 COPY store_layout.json .
-RUN mkdir -p "./Project details/New folder"
-COPY ["Project details/New folder/POS - sample transactionsb1e826f.csv", "./Project details/New folder/POS - sample transactionsb1e826f.csv"]
-COPY ["Project details/Brigade_Bangalore_10_April_26 (1)bc6219c.csv", "./Project details/Brigade_Bangalore_10_April_26 (1)bc6219c.csv"]
+COPY scripts/ ./scripts/
+
+# Copy event data for demo replay
+COPY events.jsonl ./events.jsonl
+RUN mkdir -p ./output/events
 
 # Copy dashboard
 COPY dashboard/ ./dashboard/

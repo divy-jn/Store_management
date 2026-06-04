@@ -20,7 +20,7 @@ class MetricsFakeConnection:
         self.values = values
         self.dwell_rows = dwell_rows or []
 
-    async def fetchval(self, query, store_id):
+    async def fetchval(self, query, *args):
         if "COUNT(DISTINCT visitor_id)" in query and "event_type = 'ENTRY'" in query:
             return self.values.get("unique_visitors", 0)
         if "COUNT(*) FROM events" in query and "event_type = 'ENTRY'" in query:
@@ -41,9 +41,14 @@ class MetricsFakeConnection:
         return self.dwell_rows
 
 
+class _FakeSettings:
+    checkout_attribution_minutes = 5
+
+
 class MetricsFakeDB:
     def __init__(self, values: dict[str, int | float], dwell_rows=None):
         self.conn = MetricsFakeConnection(values, dwell_rows)
+        self.settings = _FakeSettings()
 
     def acquire(self):
         return self

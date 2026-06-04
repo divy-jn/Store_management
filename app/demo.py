@@ -43,11 +43,21 @@ async def _run_demo_replay(target_store_id: str = None):
                     events_dir = fallback
                     break
 
-    if not events_dir.exists():
+    # Also check for root-level events.jsonl (the final deliverable)
+    root_events = Path("events.jsonl")
+
+    if not events_dir.exists() and not root_events.exists():
         logger.error("Demo replay failed: no events directory found")
         return
 
-    jsonl_files = sorted(events_dir.glob("*.jsonl"))
+    jsonl_files = sorted(events_dir.glob("*.jsonl")) if events_dir.exists() else []
+    # Filter out empty files
+    jsonl_files = [f for f in jsonl_files if f.stat().st_size > 0]
+
+    # If no files found in events dir, fall back to root events.jsonl
+    if not jsonl_files and root_events.exists():
+        jsonl_files = [root_events]
+
     if not jsonl_files:
         logger.error("Demo replay failed: no JSONL files found")
         return
@@ -59,8 +69,11 @@ async def _run_demo_replay(target_store_id: str = None):
                 if line.strip():
                     all_events.append(json.loads(line))
 
+    def get_ts(ev):
+        return ev.get("timestamp") or ev.get("event_timestamp") or ev.get("event_time") or ev.get("queue_join_ts") or ev.get("queue_exit_ts") or ""
+
     # Sort events by timestamp so the replay is chronological
-    all_events.sort(key=lambda x: x["timestamp"])
+    all_events.sort(key=lambda x: get_ts(x))
 
     if target_store_id:
         for ev in all_events:
@@ -71,9 +84,6 @@ async def _run_demo_replay(target_store_id: str = None):
     if all_events:
         # Shift all timestamps to truly simulate "Live" right now
         from datetime import datetime, timezone
-
-        def get_ts(ev):
-            return ev.get("timestamp") or ev.get("event_timestamp") or ev.get("event_time") or ev.get("queue_join_ts") or ev.get("queue_exit_ts")
 
         def set_ts(ev, val):
             if "timestamp" in ev: ev["timestamp"] = val
