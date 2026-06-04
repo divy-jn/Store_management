@@ -50,3 +50,6 @@ output/events/*.jsonl
 # OS
 .DS_Store
 Thumbs.db
+
+# Challenge details
+Project details/
