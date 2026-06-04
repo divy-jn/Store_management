@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirm('This will clear the current data and restart the live demo replay. Continue?')) return;
         
         try {
-            const res = await fetch(`${API_URL}/system/demo-replay`, { method: 'POST' });
+            const res = await fetch(`${API_URL}/system/demo-replay?store_id=${STORE_ID}`, { method: 'POST' });
             if (res.ok) {
                 showToast('INFO', 'Live Demo Started', 'Database cleared. Events will stream in real-time shortly.');
                 

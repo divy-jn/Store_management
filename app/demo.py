@@ -21,7 +21,7 @@ router = APIRouter(tags=["Demo"])
 demo_skip_batches = 0
 
 
-async def _run_demo_replay():
+async def _run_demo_replay(target_store_id: str = None):
     """Background task to stream events slowly for demo purposes."""
     global demo_skip_batches
     demo_skip_batches = 0
@@ -61,6 +61,12 @@ async def _run_demo_replay():
 
     # Sort events by timestamp so the replay is chronological
     all_events.sort(key=lambda x: x["timestamp"])
+
+    if target_store_id:
+        for ev in all_events:
+            ev["store_id"] = target_store_id
+            if "store_code" in ev:
+                ev["store_code"] = f"store_{target_store_id.replace('ST', '')}"
 
     if all_events:
         # Shift all timestamps to truly simulate "Live" right now
@@ -140,7 +146,7 @@ async def _run_demo_replay():
 
 
 @router.post("/system/demo-replay")
-async def start_demo_replay(background_tasks: BackgroundTasks):
+async def start_demo_replay(background_tasks: BackgroundTasks, store_id: str = None):
     """
     Clears the database and triggers a background replay of all CCTV events.
     Used exclusively for presentation wow-factor.
@@ -153,7 +159,7 @@ async def start_demo_replay(background_tasks: BackgroundTasks):
         raise HTTPException(status_code=500, detail=str(e))
 
     # Start the slow streaming background task
-    background_tasks.add_task(_run_demo_replay)
+    background_tasks.add_task(_run_demo_replay, store_id)
 
     return {"status": "success", "message": "Database cleared. Live replay started."}
 
