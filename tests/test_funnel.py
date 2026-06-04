@@ -1,12 +1,9 @@
-"""
-Tests for the conversion funnel math helper.
-
-# PROMPT: "Generate unit tests for the _build_funnel_stages function that
-# computes conversion funnel percentages and drop-off rates. Cover normal
-# flow, zero-traffic stores, single-visitor, and all-staff scenarios."
-# CHANGES MADE: Added edge cases for single visitor, all zero except entry,
-# and verified re-entry does not double-count in the funnel math.
-"""
+# PROMPT: Generate unit tests for conversion funnel stage math, including normal
+# progression, zero traffic, entry-only visitors, no-purchase sessions, and
+# re-entry de-duplication behavior.
+# CHANGES MADE: Added focused edge cases around division by zero and verified
+# drop-off percentages remain stable for sparse stores.
+"""Tests for the conversion funnel math helper."""
 
 from app.funnel import _build_funnel_stages
 

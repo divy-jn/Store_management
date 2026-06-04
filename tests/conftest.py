@@ -1,11 +1,8 @@
-"""
-Shared test fixtures for the Store Intelligence API test suite.
-
-# PROMPT: "Generate pytest fixtures for a FastAPI app with async PostgreSQL,
-# including test client, sample events, and POS data fixtures."
-# CHANGES MADE: Added idempotency test data, staff events, edge case fixtures,
-# and custom async DB handling for test isolation.
-"""
+# PROMPT: Generate pytest fixtures for a FastAPI app with async PostgreSQL-style
+# route tests, including reusable sample customer journeys and an ASGI test client.
+# CHANGES MADE: Kept lifespan disabled to avoid requiring live Postgres in unit
+# tests, added staff and journey fixtures, and used isolated async clients.
+"""Shared test fixtures for the Store Intelligence API test suite."""
 
 from __future__ import annotations
 

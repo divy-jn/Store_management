@@ -1,12 +1,9 @@
-"""
-Tests for /stores/{store_id}/metrics business logic.
-
-# PROMPT: "Generate FastAPI route tests for the metrics endpoint using a fake
-# database layer. Cover all-staff traffic exclusion, zero-purchase stores,
-# queue abandonment math, and empty stores without requiring PostgreSQL."
-# CHANGES MADE: Used query-pattern matching in the fake connection to keep
-# tests focused on endpoint behavior while still exercising the real route.
-"""
+# PROMPT: Generate FastAPI route tests for /stores/{store_id}/metrics using a
+# fake database connection. Cover empty stores, all-staff traffic exclusion,
+# conversion math, queue depth, and abandonment rate calculations.
+# CHANGES MADE: Used query-pattern fake results so tests exercise the real route
+# logic without requiring PostgreSQL, and added zero-value edge cases.
+"""Tests for /stores/{store_id}/metrics business logic."""
 
 from __future__ import annotations
 

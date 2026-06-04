@@ -23,11 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (storeSelector) {
         storeSelector.addEventListener('change', (e) => {
             STORE_ID = e.target.value;
+            const selectedStoreName = e.target.options[e.target.selectedIndex].text;
             const storeIdLabel = document.querySelector('.store-id .highlight');
             if (storeIdLabel) {
                 storeIdLabel.textContent = STORE_ID;
             }
-            showToast('INFO', 'Store Changed', `Now viewing live analytics for ${e.target.options[e.target.selectedIndex].text}`);
+            const subtitle = document.querySelector('.subtitle');
+            if (subtitle) {
+                subtitle.textContent = selectedStoreName;
+            }
+            showToast('INFO', 'Store Changed', `Now viewing live analytics for ${selectedStoreName}`);
             
             // Clear UI optimistically
             document.getElementById('current-visitors').textContent = '0';
@@ -168,16 +173,35 @@ function showToast(severity, title, message, durationMs = 6000) {
     if (severity === 'CRITICAL') icon = 'fa-triangle-exclamation';
     if (severity === 'WARN') icon = 'fa-circle-exclamation';
     
-    // The inline style sets the animation duration for the progress bar
-    toast.innerHTML = `
-        <div class="toast-icon"><i class="fa-solid ${icon}"></i></div>
-        <div class="toast-content">
-            <h4>${title}</h4>
-            <p>${message}</p>
-        </div>
-        <button class="toast-close" onclick="this.parentElement.classList.remove('show'); setTimeout(() => this.parentElement.remove(), 400);"><i class="fa-solid fa-xmark"></i></button>
-        <div class="toast-progress" style="animation-duration: ${durationMs}ms;"></div>
-    `;
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'toast-icon';
+    const iconEl = document.createElement('i');
+    iconEl.className = `fa-solid ${icon}`;
+    iconWrap.appendChild(iconEl);
+
+    const content = document.createElement('div');
+    content.className = 'toast-content';
+    const heading = document.createElement('h4');
+    heading.textContent = title;
+    const body = document.createElement('p');
+    body.textContent = message;
+    content.append(heading, body);
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'toast-close';
+    closeButton.type = 'button';
+    closeButton.setAttribute('aria-label', 'Close notification');
+    closeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    closeButton.addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    });
+
+    const progress = document.createElement('div');
+    progress.className = 'toast-progress';
+    progress.style.setProperty('--toast-duration', `${durationMs}ms`);
+
+    toast.append(iconWrap, content, closeButton, progress);
     
     container.appendChild(toast);
     
@@ -209,9 +233,16 @@ async function fetchInitialData() {
     }
 }
 
+async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Request failed with HTTP ${res.status}: ${url}`);
+    }
+    return res.json();
+}
+
 async function fetchMetrics() {
-    const res = await fetch(`${API_URL}/stores/${STORE_ID}/metrics`);
-    const data = await res.json();
+    const data = await fetchJson(`${API_URL}/stores/${STORE_ID}/metrics`);
     
     // We update current visitors via websocket, but metrics gives unique visitors today
     // and queue depth, abandonment etc.
@@ -229,20 +260,17 @@ async function fetchMetrics() {
 }
 
 async function fetchFunnel() {
-    const res = await fetch(`${API_URL}/stores/${STORE_ID}/funnel`);
-    const data = await res.json();
+    const data = await fetchJson(`${API_URL}/stores/${STORE_ID}/funnel`);
     updateFunnelChart(data.stages);
 }
 
 async function fetchHeatmap() {
-    const res = await fetch(`${API_URL}/stores/${STORE_ID}/heatmap`);
-    const data = await res.json();
+    const data = await fetchJson(`${API_URL}/stores/${STORE_ID}/heatmap`);
     updateHeatmapChart(data.zones);
 }
 
 async function fetchAnomalies() {
-    const res = await fetch(`${API_URL}/stores/${STORE_ID}/anomalies`);
-    const data = await res.json();
+    const data = await fetchJson(`${API_URL}/stores/${STORE_ID}/anomalies`);
     
     if (data.anomalies && data.anomalies.length > 0) {
         data.anomalies.forEach(a => {
@@ -255,7 +283,9 @@ async function fetchAnomalies() {
 
 function connectWebSocket() {
     // Determine WS URL based on current host (handling local vs docker)
-    const wsUrl = `ws://localhost:8000/ws/live/${STORE_ID}`;
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const apiHost = new URL(API_URL).host;
+    const wsUrl = `${wsProtocol}//${apiHost}/ws/live/${STORE_ID}`;
     const ws = new WebSocket(wsUrl);
     activeWebSocket = ws;
     
@@ -397,7 +427,12 @@ function initCharts() {
 }
 
 function updateFunnelChart(stages) {
-    if (!stages || stages.length === 0) return;
+    if (!stages || stages.length === 0) {
+        funnelChart.data.labels = [];
+        funnelChart.data.datasets[0].data = [];
+        funnelChart.update();
+        return;
+    }
     
     funnelChart.data.labels = stages.map(s => s.stage);
     funnelChart.data.datasets[0].data = stages.map(s => s.count);
@@ -405,7 +440,12 @@ function updateFunnelChart(stages) {
 }
 
 function updateHeatmapChart(zones) {
-    if (!zones || zones.length === 0) return;
+    if (!zones || zones.length === 0) {
+        heatmapChart.data.labels = [];
+        heatmapChart.data.datasets[0].data = [];
+        heatmapChart.update();
+        return;
+    }
     
     // Sort by visit count
     const sorted = [...zones].sort((a,b) => b.visit_count - a.visit_count);

@@ -1,12 +1,9 @@
-"""
-Tests for Pydantic models used across the Store Intelligence API.
-
-# PROMPT: "Generate unit tests for the Pydantic Event model and EventType enum.
-# Cover valid construction, confidence bounds, required fields, default factory
-# for event_id, and all enum values matching the detection pipeline output."
-# CHANGES MADE: Added REENTRY to enum test, boundary tests for confidence at
-# exactly 0.0 and 1.0, and metadata default factory verification.
-"""
+# PROMPT: Generate unit tests for the Pydantic Event model and EventType enum.
+# Cover valid construction, confidence bounds, required fields, event_id defaults,
+# negative dwell rejection, and all event types emitted by the detection pipeline.
+# CHANGES MADE: Added boundary tests at 0.0/1.0 confidence, REENTRY coverage,
+# metadata default verification, and explicit negative dwell validation.
+"""Tests for Pydantic models used across the Store Intelligence API."""
 
 from __future__ import annotations
 

@@ -1,12 +1,9 @@
-"""
-Tests for the /stores/{store_id}/funnel endpoint.
-
-# PROMPT: "Generate FastAPI route tests for the funnel endpoint using a fake
-# database connection. Cover normal funnel counts, re-entry/session de-duping,
-# and database-unavailable graceful degradation."
-# CHANGES MADE: Implemented query-pattern fake results to exercise the real
-# endpoint and its response model without requiring PostgreSQL.
-"""
+# PROMPT: Generate route tests for GET /stores/{store_id}/funnel with a fake DB.
+# Cover normal session counts, empty store behavior, re-entry/session de-duping,
+# and graceful database-unavailable degradation.
+# CHANGES MADE: Matched SQL query intent in the fake connection and asserted the
+# actual response model produced by the endpoint.
+"""Tests for the /stores/{store_id}/funnel endpoint."""
 
 from __future__ import annotations
 

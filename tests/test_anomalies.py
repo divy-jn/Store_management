@@ -1,12 +1,9 @@
-"""
-Tests for anomaly detection helpers and endpoint behavior.
-
-# PROMPT: "Generate tests for anomaly detection: queue spike, conversion drop,
-# dead zone, stale feed, empty anomaly list, and 503 graceful degradation. Use
-# fake async DB connections instead of PostgreSQL."
-# CHANGES MADE: Tested helper functions directly for focused branch coverage
-# and added route-level checks for empty responses and database failures.
-"""
+# PROMPT: Generate tests for anomaly detection helpers and route behavior:
+# billing queue spike, conversion drop, dead zones, stale feeds, empty anomaly
+# lists, and graceful 503 degradation.
+# CHANGES MADE: Tested helper functions directly for focused branch coverage and
+# added route-level checks for empty responses and database failures.
+"""Tests for anomaly detection helpers and endpoint behavior."""
 
 from __future__ import annotations
 

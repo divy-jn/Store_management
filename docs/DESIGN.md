@@ -57,22 +57,22 @@ graph TD
 
 ### 2.3 The Database Schema
 ```sql
-CREATE TABLE IF NOT EXISTS store_events (
-    id SERIAL PRIMARY KEY,
-    event_id VARCHAR(100) UNIQUE NOT NULL,
-    store_id VARCHAR(50) NOT NULL,
-    camera_id VARCHAR(50) NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    event_type VARCHAR(50) NOT NULL,
-    visitor_id VARCHAR(100) NOT NULL,
-    zone_id VARCHAR(50),
-    dwell_ms INTEGER,
-    confidence FLOAT,
-    is_staff BOOLEAN DEFAULT FALSE,
-    metadata JSONB
+CREATE TABLE IF NOT EXISTS events (
+    event_id        TEXT PRIMARY KEY,
+    store_id        TEXT NOT NULL,
+    camera_id       TEXT NOT NULL,
+    visitor_id      TEXT NOT NULL,
+    event_type      TEXT NOT NULL,
+    timestamp       TIMESTAMPTZ NOT NULL,
+    zone_id         TEXT,
+    dwell_ms        INTEGER DEFAULT 0,
+    is_staff        BOOLEAN DEFAULT FALSE,
+    confidence      REAL NOT NULL,
+    metadata        JSONB DEFAULT '{}',
+    ingested_at     TIMESTAMPTZ DEFAULT NOW()
 );
 ```
-- **Indexes**: Created on `(store_id, timestamp)`, `event_type`, and `visitor_id` to speed up the complex JOINs required for the Funnel and Heatmap APIs.
+- **Indexes**: Created on `store_id`, `timestamp`, `event_type`, `(store_id, event_type)`, `(store_id, visitor_id)`, and `(store_id, zone_id)` to speed up the JOINs and grouped aggregations required for metrics, funnel, heatmap, anomalies, and health checks.
 
 ## 3. Data Flow Example (Visitor Journey)
 1. **10:05 AM**: Customer walks into CAM 3. YOLO detects -> ByteTrack assigns ID 1 -> ReID creates `VIS_0001`. Pipeline emits `ENTRY`.

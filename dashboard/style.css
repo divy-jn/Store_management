@@ -520,7 +520,7 @@ body {
     height: 100%;
     width: 100%;
     transform-origin: left;
-    animation: toast-timer linear forwards;
+    animation: toast-timer var(--toast-duration, 6000ms) linear forwards;
 }
 .toast.CRITICAL .toast-progress::after { background: var(--danger); }
 .toast.WARN .toast-progress::after { background: var(--warning); }

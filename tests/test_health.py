@@ -1,12 +1,8 @@
-"""
-Tests for the /health endpoint.
-
-# PROMPT: "Generate tests for the health check endpoint that verify both
-# healthy and unhealthy database states. Use a fake DB layer so tests
-# run without a live PostgreSQL connection."
-# CHANGES MADE: Created FakeHealthyDB and FakeUnhealthyDB stubs with
-# monkeypatch injection to test both states independently.
-"""
+# PROMPT: Generate tests for GET /health covering healthy and unhealthy database
+# states, per-store event freshness, stale feed reporting, and uptime fields.
+# CHANGES MADE: Added fake healthy/unhealthy DB stubs and monkeypatch injection
+# so the endpoint is tested without a live PostgreSQL service.
+"""Tests for the /health endpoint."""
 
 import pytest
 from httpx import AsyncClient

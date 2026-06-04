@@ -1,13 +1,9 @@
-"""
-Tests for the /events/ingest endpoint with TRUE partial success.
-
-# PROMPT: "Generate tests for the event ingestion endpoint that verify partial
-# success behavior: a batch with a mix of valid and malformed events should
-# accept the valid ones and reject only the bad ones. Also test idempotency,
-# empty batches, and the 500-event limit."
-# CHANGES MADE: Added FakeDB layer to test ingestion without live Postgres.
-# Added tests for partial success, duplicate handling, and malformed events.
-"""
+# PROMPT: Generate route tests for POST /events/ingest that prove true partial
+# success, event_id idempotency, malformed-event rejection, invalid JSON handling,
+# and compatibility with sample event variants from the challenge packet.
+# CHANGES MADE: Built a fake async DB layer, added duplicate handling assertions,
+# and covered entry, zone, and queue sample normalization paths.
+"""Tests for the /events/ingest endpoint with true partial success."""
 
 from __future__ import annotations
 

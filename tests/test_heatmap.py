@@ -1,12 +1,9 @@
-"""
-Tests for /stores/{store_id}/heatmap.
-
-# PROMPT: "Generate route tests for the heatmap endpoint with a fake DB. Cover
-# normalized zone scores, low/high data confidence, empty stores, and graceful
-# 503 behavior when the database is unavailable."
-# CHANGES MADE: Used simple async fake rows to validate normalization and
-# response-shape requirements from the PDF spec.
-"""
+# PROMPT: Generate route tests for GET /stores/{store_id}/heatmap with fake DB
+# rows. Cover zone score normalization, low/high data_confidence flags, empty
+# stores, and structured 503 behavior when storage is unavailable.
+# CHANGES MADE: Added async fake rows and assertions for response shape, score
+# ordering, and confidence thresholds required by the challenge spec.
+"""Tests for /stores/{store_id}/heatmap."""
 
 from __future__ import annotations
 

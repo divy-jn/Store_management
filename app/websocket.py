@@ -8,7 +8,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timezone
-from typing import Set
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -18,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["WebSocket"])
 
-# Connected WebSocket clients
-_active_connections: Set[WebSocket] = set()
+# Connected WebSocket clients keyed by socket with the subscribed store.
+_active_connections: dict[WebSocket, str] = {}
 
 
 @router.websocket("/ws/live/{store_id}")
@@ -30,7 +29,7 @@ async def websocket_live(websocket: WebSocket, store_id: str):
     Sends updated metrics every 5 seconds (or on demand) to connected clients.
     """
     await websocket.accept()
-    _active_connections.add(websocket)
+    _active_connections[websocket] = store_id
     logger.info(f"WebSocket client connected for store {store_id}")
 
     try:
@@ -50,7 +49,7 @@ async def websocket_live(websocket: WebSocket, store_id: str):
     except Exception as e:
         logger.error(f"WebSocket error for store {store_id}: {e}")
     finally:
-        _active_connections.discard(websocket)
+        _active_connections.pop(websocket, None)
 
 
 async def broadcast_update(store_id: str):
@@ -59,13 +58,18 @@ async def broadcast_update(store_id: str):
         return
 
     metrics = await _get_live_metrics(store_id)
-    disconnected = set()
+    disconnected = []
 
-    for ws in _active_connections:
+    for ws, subscribed_store_id in list(_active_connections.items()):
+        if subscribed_store_id != store_id:
+            continue
         try:
             await ws.send_json(metrics)
         except Exception:
-            disconnected.add(ws)
+            disconnected.append(ws)
+
+    for ws in disconnected:
+        _active_connections.pop(ws, None)
 
 
 async def _get_live_metrics(store_id: str) -> dict:

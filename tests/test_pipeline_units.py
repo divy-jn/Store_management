@@ -1,12 +1,9 @@
-"""
-Tests for pipeline helper units (QueueTracker, ZoneClassifier, EventEmitter).
-
-# PROMPT: "Generate unit tests for the pipeline helper modules: QueueTracker,
-# ZoneClassifier, and EventEmitter. Cover idempotent queue operations, unknown
-# camera zones, and JSONL file output format."
-# CHANGES MADE: Added EventEmitter output verification, staff detector color
-# range test, and zone classifier boundary tests.
-"""
+# PROMPT: Generate unit tests for pipeline helper modules: QueueTracker,
+# ZoneClassifier, EventEmitter, and StaffDetector. Cover queue idempotency,
+# unknown camera zones, JSONL output format, timestamps, and invalid boxes.
+# CHANGES MADE: Added file-output verification, staff color-range checks,
+# session sequence assertions, and safe handling of nonexistent queue removals.
+"""Tests for pipeline helper units: QueueTracker, ZoneClassifier, and EventEmitter."""
 
 import json
 import shutil
