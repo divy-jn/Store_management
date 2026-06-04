@@ -80,7 +80,7 @@ async def get_store_metrics(
                   AND e.is_staff = FALSE
                   AND (e.zone_id = 'BILLING' OR e.zone_id LIKE '%BILLING%' OR e.event_type = 'BILLING_QUEUE_JOIN')
                   AND e.event_type IN ('ZONE_ENTER', 'ZONE_DWELL', 'BILLING_QUEUE_JOIN')
-                  AND e.timestamp BETWEEN (p.timestamp - INTERVAL '5 minutes') AND p.timestamp
+                  AND e.timestamp BETWEEN (p.timestamp - INTERVAL '{db.settings.checkout_attribution_minutes} minutes') AND p.timestamp
                 """,
                 store_id,
             )

@@ -1,10 +1,10 @@
 # Store Intelligence Pipeline Runner
 
 param(
+    [Parameter(Mandatory=$true)][string]$StoreId,
+    [string]$ApiUrl = "http://localhost:8000",
     [string]$InputDir,
-    [string]$OutputDir,
-    [string]$StoreId = "ST1008",
-    [string]$ApiUrl = "http://localhost:8000"
+    [string]$OutputDir
 )
 
 $ErrorActionPreference = "Stop"

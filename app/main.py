@@ -13,6 +13,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import json
+from pathlib import Path
 
 from app.anomalies import router as anomalies_router
 from app.database import db
@@ -133,6 +135,29 @@ app.include_router(websocket_router)
 app.include_router(demo_router)
 
 
+@app.get("/stores", tags=["Stores"])
+async def get_stores():
+    """Get list of available stores and their metadata from store_layout.json."""
+    try:
+        layout_path = Path(__file__).parent.parent / "store_layout.json"
+        with open(layout_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            
+        return {
+            "stores": [
+                {
+                    "store_id": s.get("store_id"),
+                    "store_name": s.get("store_name"),
+                    "city": s.get("city")
+                }
+                for s in data.get("stores", [])
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Failed to load stores: {e}")
+        return {"stores": []}
+
+
 # ─────────────────────────────────────────────
 # Root Endpoint
 # ─────────────────────────────────────────────
@@ -144,7 +169,6 @@ async def root():
     return {
         "service": "Store Intelligence API",
         "version": "1.0.0",
-        "store_id": "ST1008",
         "endpoints": {
             "docs": "/docs",
             "health": "/health",

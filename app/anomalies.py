@@ -96,7 +96,7 @@ async def _check_queue_spike(conn, store_id: str, anomalies: list[Anomaly]):
     )
     avg_depth = avg_depth or 0
 
-    if avg_depth > 0 and current > (2 * avg_depth):
+    if avg_depth > 0 and current > (2 * avg_depth) and current >= db.settings.anomaly_queue_depth_threshold:
         severity = (
             AnomalySeverity.CRITICAL
             if current > (3 * avg_depth)
@@ -144,9 +144,9 @@ async def _check_conversion_drop(conn, store_id: str, anomalies: list[Anomaly]):
         JOIN pos_transactions p ON e.store_id = p.store_id
         WHERE e.store_id = $1
           AND e.is_staff = FALSE
-          AND e.zone_id = 'BILLING'
+          AND (e.zone_id = 'BILLING' OR e.zone_id LIKE '%BILLING%' OR e.event_type = 'BILLING_QUEUE_JOIN')
           AND e.event_type IN ('ZONE_ENTER', 'ZONE_DWELL', 'BILLING_QUEUE_JOIN')
-          AND e.timestamp BETWEEN (p.timestamp - INTERVAL '5 minutes') AND p.timestamp
+          AND e.timestamp BETWEEN (p.timestamp - INTERVAL '{db.settings.checkout_attribution_minutes} minutes') AND p.timestamp
         """,
         store_id,
     )

@@ -30,7 +30,9 @@ class DetectionPipeline:
         logger.info("Loading YOLOv8 model...")
         self.model = YOLO(str(PIPELINE_DIR / "yolov8s.pt"))
 
-        self.zone_classifier = ZoneClassifier(str(PROJECT_ROOT / "store_layout.json"))
+        self.zone_classifier = ZoneClassifier(
+            str(PROJECT_ROOT / "store_layout.json"), store_id=store_id
+        )
         self.staff_detector = StaffDetector()
         self.reid_manager = ReIDManager()
         self.queue_tracker = QueueTracker()
@@ -171,21 +173,21 @@ class DetectionPipeline:
                     )
 
                     # Queue Logic
-                    if current_zone == "BILLING" and cam_state["zone"] != "BILLING":
-                        self.queue_tracker.update(visitor_id, "BILLING")
+                    if current_zone and "BILLING" in current_zone.upper() and (not cam_state["zone"] or "BILLING" not in cam_state["zone"].upper()):
+                        self.queue_tracker.update(visitor_id, current_zone)
                         self.emitter.emit(
                             camera_id=cam_id,
                             visitor_id=visitor_id,
                             event_type="BILLING_QUEUE_JOIN",
                             timestamp=timestamp,
                             confidence=confidence,
-                            zone_id="BILLING",
+                            zone_id=current_zone,
                             is_staff=is_staff,
                             metadata={
                                 "queue_depth": self.queue_tracker.get_queue_depth()
                             },
                         )
-                    elif cam_state["zone"] == "BILLING" and current_zone != "BILLING":
+                    elif cam_state["zone"] and "BILLING" in cam_state["zone"].upper() and (not current_zone or "BILLING" not in current_zone.upper()):
                         self.queue_tracker.remove(visitor_id)
                         self.emitter.emit(
                             camera_id=cam_id,
@@ -193,7 +195,7 @@ class DetectionPipeline:
                             event_type="BILLING_QUEUE_ABANDON",
                             timestamp=timestamp,
                             confidence=confidence,
-                            zone_id="BILLING",
+                            zone_id=cam_state["zone"],
                             is_staff=is_staff,
                         )
 
@@ -276,7 +278,7 @@ class DetectionPipeline:
                     v_state = self.visitor_state[visitor_id]
                     cam_state = v_state[cam_id]
 
-                    if cam_state["zone"] == "BILLING":
+                    if cam_state["zone"] and "BILLING" in cam_state["zone"].upper():
                         self.queue_tracker.remove(visitor_id)
 
                     if cam_state["zone"]:
@@ -325,8 +327,8 @@ def main():
     )
     parser.add_argument(
         "--store-id",
-        default="ST1008",
-        help="Store identifier to write into emitted events (default: ST1008)",
+        required=True,
+        help="Store identifier to write into emitted events",
     )
     args = parser.parse_args()
 
@@ -340,25 +342,26 @@ def main():
     videos = list(input_path.glob("*.mp4"))
     logger.info(f"Found {len(videos)} videos to process")
 
-    cam_mapping = {
-        "CAM 1 store inside.mp4": "CAM_FLOOR_01",
-        "CAM 2 store inside 2nd angle.mp4": "CAM_FLOOR_02",
-        "CAM3 entrance.mp4": "CAM_ENTRY_01",
-        "CAM 4 internal area.mp4": "CAM_INTERNAL_01",
-        "CAM 5 billing.mp4": "CAM_BILLING_01",
-        "CAM 1 - zone.mp4": "CAM_FLOOR_01",
-        "CAM 2 - zone.mp4": "CAM_FLOOR_02",
-        "CAM 3 - entry.mp4": "CAM_ENTRY_01",
-        "CAM 5 - billing.mp4": "CAM_BILLING_01",
-        "zone.mp4": "CAM_FLOOR_01",
-        "entry 1.mp4": "CAM_ENTRY_01",
-        "entry 2.mp4": "CAM_ENTRY_02",
-        "billing_area.mp4": "CAM_BILLING_01",
-    }
+    # Load cam mapping dynamically from config
+    cam_mapping = {}
+    try:
+        import json
+        layout_path = PROJECT_ROOT / "store_layout.json"
+        with open(layout_path, "r", encoding="utf-8") as f:
+            layout_data = json.load(f)
+            store_config = next((s for s in layout_data.get("stores", []) if s.get("store_id") == args.store_id), None)
+            if store_config:
+                cam_mapping = {
+                    c.get("file_name"): c.get("camera_id")
+                    for c in store_config.get("cameras", [])
+                }
+    except Exception as e:
+        logger.warning(f"Failed to load camera mapping from config: {e}")
 
     video_paths = {}
     for video in videos:
-        cam_id = cam_mapping.get(video.name, "CAM_UNKNOWN")
+        # Default to video stem if not found in mapping
+        cam_id = cam_mapping.get(video.name, video.stem)
         video_paths[cam_id] = str(video)
 
     if video_paths:

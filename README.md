@@ -17,7 +17,7 @@ This repo is organized around the evaluation framework:
 | Detection Pipeline, 30 pts | YOLOv8s person detection, ByteTrack tracking, ReID visitor tokens, synchronized multi-camera frame processing, zone classification, staff exclusion, queue depth, re-entry events, JSONL event emission |
 | API and Business Logic, 35 pts | FastAPI endpoints for ingest, metrics, funnel, heatmap, anomalies, and health; idempotent partial-success ingestion; session-based funnel; POS time-window conversion correlation |
 | Production Readiness, 20 pts | Docker Compose, PostgreSQL, structured JSON request logs, health checks, graceful 503 degradation, retrying event replay, 54 automated tests |
-| Engineering Thinking, 15 pts | Non-trivial `docs/DESIGN.md` and `docs/CHOICES.md`, plus AI prompt/change blocks in test files |
+| Engineering Thinking, 15 pts | Non-trivial `DESIGN.md` and `CHOICES.md`, plus AI prompt/change blocks in test files |
 | Live Dashboard, +10 bonus | Web dashboard at `http://localhost:3000` with WebSocket live counters, charts, anomaly toasts, and replay demo controls |
 
 ## Five-Command Review Path
@@ -51,7 +51,8 @@ For a fast reviewer pass:
 2. `output/events/*.jsonl` should contain schema-compliant events with unique `event_id`, `visitor_id`, `event_type`, `timestamp`, `is_staff`, `confidence`, and metadata fields.
 3. `GET /stores/ST1008/metrics` should show non-staff visitor counts, conversion rate, dwell data, queue depth, and abandonment rate.
 4. `GET /stores/ST1008/funnel` should show Entry -> Zone Visit -> Billing Queue -> Purchase with session-based de-duplication.
-5. `docs/DESIGN.md` and `docs/CHOICES.md` explain the system and the trade-offs behind the model, event schema, and API design.
+5. `DESIGN.md` and `CHOICES.md` explain the system and the trade-offs behind the model, event schema, and API design.
+6. `events.jsonl` in the project root is the final converted log deliverable matching the requested sample schema format.
 
 ## API Endpoints
 
@@ -184,8 +185,9 @@ app/                 FastAPI application, schemas, DB, analytics endpoints
 pipeline/            Detection, tracking, ReID, zone, queue, replay utilities
 dashboard/           Static web dashboard
 tests/               Unit and route tests with AI prompt/change headers
-docs/DESIGN.md       Architecture and AI-assisted design decisions
-docs/CHOICES.md      Model, schema, and API trade-off rationale
+DESIGN.md            Architecture and AI-assisted design decisions
+CHOICES.md           Model, schema, and API trade-off rationale
+events.jsonl         Final event log deliverable matching sample schema
 store_layout.json    Store zones and camera coverage
 docker-compose.yml   Local reviewer startup
 Dockerfile           API image

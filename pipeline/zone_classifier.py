@@ -11,12 +11,10 @@ class ZoneClassifier:
     of a bounding box) into zones.
     """
 
-    def __init__(self, layout_path: str = "store_layout.json"):
-        self.zones: Dict[str, Dict[str, Polygon]] = (
-            {}
-        )  # camera_id -> {zone_id: Polygon}
-        self.zone_types: Dict[str, str] = {}  # zone_id -> zone_type
-        self.store_id = "ST1008"
+    def __init__(self, layout_path: str = "store_layout.json", store_id: str = None):
+        self.zones: Dict[str, Dict[str, Polygon]] = {}
+        self.zone_types: Dict[str, str] = {}
+        self.store_id = store_id
         self._load_layout(layout_path)
 
     def _load_layout(self, layout_path: str):
@@ -28,7 +26,10 @@ class ZoneClassifier:
             data = json.load(f)
 
         for store in data.get("stores", []):
-            self.store_id = store.get("store_id")
+            if self.store_id and store.get("store_id") != self.store_id:
+                continue
+            if not self.store_id:
+                self.store_id = store.get("store_id")
             for zone in store.get("zones", []):
                 z_id = zone.get("zone_id")
                 z_type = zone.get("zone_type")
@@ -49,18 +50,9 @@ class ZoneClassifier:
 
     def _generate_dummy_polygon(self, camera_id: str, zone_id: str) -> Polygon:
         """Fallback function to generate dummy polygons if none exist in JSON."""
-        # Simple splits for 1920x1080
-        if zone_id == "ENTRY":
-            return Polygon([(400, 800), (1500, 800), (1500, 1080), (400, 1080)])
-        elif zone_id == "BILLING":
-            return Polygon([(0, 200), (800, 200), (800, 800), (0, 800)])
-        elif zone_id == "SKINCARE":
-            return Polygon([(0, 0), (960, 0), (960, 1080), (0, 1080)])
-        elif zone_id == "MAKEUP":
-            return Polygon([(960, 0), (1920, 0), (1920, 1080), (960, 1080)])
-        else:
-            # Default fallback covers entire screen
-            return Polygon([(0, 0), (1920, 0), (1920, 1080), (0, 1080)])
+        # Generic fallback covers entire screen since real coordinates would be provided
+        # by a UI or setup tool in `store_layout.json`
+        return Polygon([(0, 0), (1920, 0), (1920, 1080), (0, 1080)])
 
     def get_zone_for_point(self, camera_id: str, x: float, y: float) -> Optional[str]:
         """

@@ -1,5 +1,5 @@
-const API_URL = 'http://localhost:8000';
-let STORE_ID = 'ST1076';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000' : `${window.location.protocol}//${window.location.hostname}:8000`;
+let STORE_ID = null;
 let activeWebSocket = null;
 
 // Chart instances
@@ -7,10 +7,46 @@ let funnelChart = null;
 let heatmapChart = null;
 
 // Initialize on load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const storeSelector = document.getElementById('store-select');
-    if (storeSelector) {
+    
+    // Fetch available stores dynamically
+    try {
+        const res = await fetch(`${API_URL}/stores`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.stores && data.stores.length > 0) {
+                if (storeSelector) {
+                    storeSelector.innerHTML = '';
+                    data.stores.forEach(store => {
+                        const option = document.createElement('option');
+                        option.value = store.store_id;
+                        option.textContent = `${store.store_name} (${store.store_id})`;
+                        storeSelector.appendChild(option);
+                    });
+                    STORE_ID = data.stores[0].store_id;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("Could not fetch stores dynamically, using fallback", e);
+    }
+    
+    if (storeSelector && !STORE_ID) {
         STORE_ID = storeSelector.value;
+    } else if (!STORE_ID) {
+        STORE_ID = "ST1076"; // final fallback
+    }
+    
+    // Update labels
+    const storeIdLabel = document.querySelector('.store-id .highlight');
+    if (storeIdLabel) storeIdLabel.textContent = STORE_ID;
+    
+    if (storeSelector) {
+        const subtitle = document.querySelector('.subtitle');
+        if (subtitle && storeSelector.selectedIndex >= 0) {
+            subtitle.textContent = storeSelector.options[storeSelector.selectedIndex].text;
+        }
     }
 
     initClock();

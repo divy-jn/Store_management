@@ -34,6 +34,14 @@ class DatabaseSettings(BaseSettings):
     db_min_connections: int = 5
     db_max_connections: int = 20
 
+    # Dataset paths
+    pos_csv_path: Optional[str] = None
+    events_jsonl_path: Optional[str] = None
+
+    # Business Logic Configurations
+    checkout_attribution_minutes: int = 5
+    anomaly_queue_depth_threshold: int = 5
+
 
 # ─────────────────────────────────────────────
 # Schema Definition

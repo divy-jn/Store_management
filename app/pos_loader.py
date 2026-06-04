@@ -25,7 +25,10 @@ POS_CSV_CANDIDATES = [
 
 
 def _default_pos_csv_path() -> Path:
-    """Prefer the latest challenge POS file, falling back to the older dataset."""
+    """Prefer the configured ENV path, then fallback to candidates."""
+    if db.settings.pos_csv_path:
+        return Path(db.settings.pos_csv_path)
+        
     for candidate in POS_CSV_CANDIDATES:
         if candidate.exists():
             return candidate
